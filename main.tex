@@ -17,13 +17,16 @@
 \usepackage[vlined,linesnumbered,titlenumbered,algoruled]{algorithm2e}%
 \usepackage{listings}
 \RequirePackage{graphics,epsf}
-\usepackage{setspace}% http://ctan.org/pkg/setspace
+%\usepackage{setspace}% http://ctan.org/pkg/setspace
 % Already loaded by the apa6 documentclass...
 \usepackage{etoolbox}% http://ctan.org/pkg/etoolbox
-
 \usepackage[toc,page]{appendix}
-
 \usepackage{xcolor}
+\usepackage{tocloft}
+\usepackage{etoolbox}
+ 
+\AtBeginEnvironment{algorithm}{\setstretch{.5}}
+%\AtBeginEnvironment{algorithm}{\setspace{.5}}
 
 \renewcommand{\type}{Thesis}
 \renewcommand{\degree}{MASTER OF SCIENCE}
@@ -47,9 +50,10 @@
 
 % Put the text of your abstract between the brackets
 \theabstract{
-State of the art unmanned surface vehicles typically exhibit rudimentary autonomy, apart from navigation controllers. Sophisticated autopilots have enabled these vehicles to follow a path as a sequence of coordinates called waypoints, and related control tasks such as target-following, station keeping, and obstacle avoidance are well established. However, humans are typically making all the mission planning decisions. These increasingly capable platforms could offer an intelligent remote presence for the marine environment, but are used as tools with specific orders rather than as agents responsible for intelligently investigating its environment. This research attempts to increase the autonomy of unmanned surface vehicles by considering them as being controlled by multiple specialized intelligent agents, specifically, the Analyst, the Surveyor, and the Navigator. The Analyst role studies data from its environment to specify objectives. The Surveyor is responsible for conducting mission planning to efficiently meet as many objectives as possible while ensuring missions are within constraints such as time and energy limits. Missions are then executed by the Navigator. The major challenge in increasing autonomy is the high computational complexity of many of the tasks involved, such as path planning. An emphasis is placed on heuristic and metaheuristic algorithms that sacrifice optimality to make autonomy feasible. Examples of Surveyor and Analyst agents have been implemented and initial results of the techniques used to fulfill their roles are examined. 
+State of the art unmanned surface vehicles typically exhibit rudimentary autonomy, apart from navigation controllers. Sophisticated autopilots have enabled these vehicles to follow a path as a sequence of coordinates called waypoints, and related control tasks such as target-following, station keeping, and obstacle avoidance are well established. However, humans are typically making all the mission planning decisions. These increasingly capable platforms could offer an intelligent remote presence for the marine environment, but are used as tools with specific orders rather than as agents responsible for intelligently investigating its environment. This research attempts to increase the autonomy of unmanned surface vehicles by considering them as being controlled by multiple specialized intelligent agents, specifically, the \textit{Analyst}, the \textit{Surveyor}, and the \textit{\textit{Navigator}}. The \textit{Analyst} role studies data from its environment to specify objectives. The \textit{Surveyor} is responsible for conducting mission planning to efficiently meet as many objectives as possible while ensuring missions are within constraints such as time and energy limits. Missions are then executed by the \textit{\textit{Navigator}}. The major challenge in increasing autonomy is the high computational complexity of many of the tasks involved, such as path planning. An emphasis is placed on heuristic and metaheuristic algorithms that sacrifice optimality to make autonomy feasible. Examples of \textit{Surveyor} and \textit{Analyst} agents have been implemented and initial results of the techniques used to fulfill their roles are examined. 
 }
 
+\setlength\cftparskip{-2pt}
 \tableofcontents
 %\pagestyle{headings}  % need this to set up the header
 \setlength{\headheight}{36pt}
@@ -69,35 +73,35 @@ State of the art unmanned surface vehicles typically exhibit rudimentary autonom
 
 Unmanned Surface Vehicles (USV) have numerous applications for scientific, commercial, and military sectors. USV can perform tasks such as towing, shipping, demining, extending communications, target-following, and surveying specified regions. More generally, USV can serve as remote presence in the marine environment for scientific investigation~\cite{manley2008unmanned}. Deployment of humans for continuous or periodic monitoring and exploration consumes a massive amount of time and resources. Unmanned systems can be used to automatically collect substantial data over an extended timeframe at a greatly reduced cost compared to using a human crew. They can also conduct mission in environments that would present risk, either to humans or to a more expensive vehicle~\cite{liu:2016}. Often compact and maneuverable, they can deploy in shallow or narrow waters that are inaccessible to conventional watercraft~\cite{liu:2016}. A high degree of marine presence would provide detailed data for insight into the marine environment under a variety of conditions while observing its evolution over time. Such a system benefits ocean modelling, abnormality detection, marine species population estimation, and other oceanographic and marine science concerns. Stationary water and air monitoring stations exist, but the USV's mobility gives it a much wider domain of study. 
 
-Advances in hardware and robot control systems have lead to the development of highly capable USVs. Miniaturized camera systems, compact onboard computers,  Global Positioning System (GPS)-based positioning, and autopilot modules have the potential to enable intelligent water surface agents. However, few examples exist of robot boats exhibiting anything more than rudimentary autonomy~\cite{bertram2008unmanned},~\cite{liu:2016}. Diverse research, academic, and industry groups are deploying USVs for various purposes, but the missions are highly human-driven. Manual input of waypoints or coverage polygons are the norm for generating USV missions. Obstacle avoidance may even be handled by a human on stand-by rather than as part of an onboard feedback-loop reaction system. Today's USVs are largely implemented as tools rather than assigned responsibilities as agents. It is desirable to have an autonomous marine surface agent that has some understanding of its environment and is capable of generating objectives and missions to conduct data-driven investigations to support scientific research goals.
+Advances in hardware and robot control systems have lead to the development of highly capable USVs. Miniaturized camera systems, compact onboard computers,  Global Positioning System (GPS)-based positioning, and autopilot modules have the potential to enable intelligent water surface agents. However, few examples exist of robot boats exhibiting anything more than rudimentary autonomy~\cite{bertram2008unmanned, liu:2016}. Diverse research, academic, and industry groups are deploying USVs for various purposes, but the missions are highly human-driven. Manual input of waypoints or coverage polygons are the norm for generating USV missions. Obstacle avoidance may even be handled by a human on stand-by rather than as part of an onboard feedback-loop reaction system. Today's USVs are largely implemented as tools rather than assigned responsibilities as agents. It is desirable to have an autonomous marine surface agent that has some understanding of its environment and is capable of generating objectives and missions to conduct data-driven investigations to support scientific research goals.
 
 \section{Approach}
 
-This thesis is part of larger research project to create a complete autonomous system for USVs to act as scientific agents in the marine environment. Since sophisticated guidance and navigation systems are abundant, the focus is on the automatic generation of goals and mission planning to meet those goals. The design of this system is built on the concept of a robot vehicle being operated by multiple distinct intelligent agents, each of which has a specific domain of responsibility. The agents are responsible for setting mission goals, generating mission plans, and executing missions on the vehicle. The system design is described in terms of each agent's role.
+This work is part of larger research project to create a complete autonomous system for USVs to act as scientific agents in the marine environment. Since sophisticated guidance and navigation systems are abundant, the focus here is on the automatic generation of goals and mission planning to meet those goals. The design of this system is built on the concept of a robot vehicle being operated by multiple distinct intelligent agents, each of which has a specific domain of responsibility. The agents are responsible for setting mission goals, generating mission plans, and executing missions on the vehicle. The system design is described in terms of each agent's role.
 
 \subsection{Autonomous Agents}
 
-The agents that compose this system are called the Analyst, Surveyor, and Navigator. The \textit{Analyst} directs the robot's mission by specifying targets and a reward value for each location in the environment (even if that reward is null due to lack of information). The \textit{Surveyor} generates mission plans in order to fulfill the scientific goals. The missions explicitly attempt to maximize the reward by visiting targets as well as collecting additional, opportunistic rewards when appropriate. Specifically, this means that the Surveyor is aware of both the Analyst's requested targets as well as the reward function that covers the entire environment under study. An example of using both sources for mission planning is to generate a path between two targets that makes minor deviations that increase the reward. Finally, the mission plan is sent to the \textit{Navigator} who implements the plan on hardware by issuing motor commands that follow the path. A detailed look at the role of each agent follows, as well as a description of their implementation in this thesis. This text presents initial results in a larger research effort to explore the use of these agents to deliver a highly capable autonomous USV for scientific/survey missions. 
+The agents that compose this system are called the \textit{Analyst}, \textit{Surveyor}, and \textit{\textit{Navigator}}. The \textit{\textit{Analyst}} directs the robot's mission by specifying targets and a reward value for each location in the environment (even if that reward is null due to lack of information). The \textit{\textit{Surveyor}} generates mission plans in order to fulfill the scientific goals. The missions explicitly attempt to maximize the reward by visiting targets as well as collecting additional, opportunistic rewards when appropriate. Specifically, this means that the \textit{Surveyor} is aware of both the \textit{Analyst}'s requested targets as well as the reward function that covers the entire environment under study. An example of using both sources for mission planning is to generate a path between two targets that makes minor deviations that increase the reward. Finally, the mission plan is sent to the \textit{\textit{\textit{Navigator}}} who implements the plan on hardware by issuing motor commands that follow the path. A detailed look at the role of each agent follows, as well as a description of their implementation in this work. This text presents initial results in a larger research effort to explore the use of these agents to deliver a highly capable autonomous USV for scientific/survey missions. 
 
-\subsubsection{Analyst Agent}
+\subsubsection{\textit{Analyst} Agent}
 
-The Analyst most directly relates the system to the goal of implementing an autonomous scientific explorer. Whereas a traditional robot, even one with a high degree of autonomous mobility, has its mission determined by user-specified goals, the Analyst performs data-driven generation of goals for the platform. The Analyst studies available data sources to assign to a location a scientific value, or, reward. Over the region that the robot operates, a grid or function is created that maps locations (typically as discrete cells in a grid representation of the environment) to rewards. Regions, typically polygons, that offer high reward can be specified as targets. This is intended to be analogous to the idea that a human expert can evaluate the relevancy/interest of each location (it may simply be an "I don't know"), but also should be able to select specific areas to survey. The robot should not be tied to a particular Analyst, just as a research vessel should not serve just one client. Though, the hardware and software capabilities may make certain Analyst's goals incompatible with the particular vehicle. A standard format for Analyst's output should be in place to allow multiple Analysts to operate. The defining characteristic of the Analyst is that it uses some data-driven methods to assessing the situation and automatically determining the scientific values. There are numerous approaches to implementing the Analyst, with major features being whether the analysis is online or offline, the use of external data sources, and the mechanisms for determining reward. 
+The \textit{Analyst} most directly relates the system to the goal of implementing an autonomous scientific explorer. Whereas a traditional robot, even one with a high degree of autonomous mobility, has its mission determined by user-specified goals, the \textit{Analyst} performs data-driven generation of goals for the platform. The \textit{Analyst} studies available data sources to assign to a location a scientific value, or, reward. Over the region that the robot operates, a grid or function is created that maps locations (typically as discrete cells in a grid representation of the environment) to rewards. Regions, typically polygons, that offer high reward can be specified as targets. This is intended to be analogous to the idea that a human expert can evaluate the relevancy/interest of each location (it may simply be an "I don't know"), but also should be able to select specific areas to survey. The robot should not be tied to a particular \textit{Analyst}, just as a research vessel should not serve just one client. Though, the hardware and software capabilities may make certain \textit{Analyst}'s goals incompatible with the particular vehicle. A standard format for \textit{Analyst}'s output should be in place to allow multiple \textit{Analyst}s to operate. The defining characteristic of the \textit{Analyst} is that it uses some data-driven methods to assessing the situation and automatically determining the scientific values. There are numerous approaches to implementing the \textit{Analyst}, with major features being whether the analysis is online or offline, the use of external data sources, and the mechanisms for determining reward. 
 
-An example of an Analyst is one that uses onboard data streams to learn about its environment and recognize when interesting subjects are available to investigate. This Analyst could be responsible for broad exploration of a particular body of water, such as a bay or lagoon. Unsupervised learning is performed on samples from the robot's onboard camera stream which is used to characterize the environment over time. Particular concepts, or entities, are learned and a general understanding of normality for the region is obtained. The Analyst has certain expectations regarding what it will encounter. A particularly sophisticated Analyst may be associating the learned concepts with times of day, weather conditions, or whatever other relevant information is available. If something unexpected is seen on the mission, the location of the unexpected event is considered to be interesting and its reward is increased. A simple idea for representing \textit{interestingness} is to classify all observations into fuzzy sets. When a sensor reading gives insufficient weight to a particular set value, or the values are thinly spread across a number of sets, this is proportional to the \textit{interestingness} of the observation. The updated reward can be assigned to a single cell or group of cells to mark the location as interesting. This can also be set as a specific target, either for consideration in the next mission planning cycle or to interrupt and set a new goal to that target while within a mission. This is an example of an onboard Analyst using both historical data to inform an understanding of the world and online observations to assess potential interesting targets. 
+An example of an \textit{Analyst} is one that uses onboard data streams to learn about its environment and recognize when interesting subjects are available to investigate. This \textit{Analyst} could be responsible for broad exploration of a particular body of water, such as a bay or lagoon. Unsupervised learning is performed on samples from the robot's onboard camera stream which is used to characterize the environment over time. Particular concepts, or entities, are learned and a general understanding of normality for the region is obtained. The \textit{Analyst} has certain expectations regarding what it will encounter. A particularly sophisticated \textit{Analyst} may be associating the learned concepts with times of day, weather conditions, or whatever other relevant information is available. If something unexpected is seen on the mission, the location of the unexpected event is considered to be interesting and its reward is increased. A simple idea for representing \textit{interestingness} is to classify all observations into fuzzy sets. When a sensor reading gives insufficient weight to a particular set value, or the values are thinly spread across a number of sets, this is proportional to the \textit{interestingness} of the observation. The updated reward can be assigned to a single cell or group of cells to mark the location as interesting. This can also be set as a specific target, either for consideration in the next mission planning cycle or to interrupt and set a new goal to that target while within a mission. This is an example of an onboard \textit{Analyst} using both historical data to inform an understanding of the world and online observations to assess potential interesting targets. 
 
-The Analyst need not use sophisticated machine learning or data mining to fulfill the role and provide substantial autonomy to a system. What is critical is that data be used to assign reward and select targets. A simpler Analyst that uses occasional updates from internet sources for analysis used in offline mission plan is described next. This Analyst is, for example, interested in collecting data on seagrasses. Every day, a new satellite image is available that captures the water body of interest. The Analyst has studied the history of this imagery. It has some image processing technique for extracting several substrate entities, which include seagrasses. These entities follow the notation $E_{name}$ or $E_{index}$, so that example entities are $E_{sandy}$, $E_{spartina}$, and $E_{5}$. The Analyst can use this data to generate a grid that assigns reward to all cells in the environment. Reward can incorporate multiple characteristics. Consider an uncommon entity $E_{rare}$ that is present is today's image. The presence of $E_{rare}$ gives reward to that cell and those nearby. Consider also a mundane $E_{common}$ that has not been recently surveyed in favour of more interesting entities. To avoid stale data and to maintain ongoing observations, the sliding window of entity coverage proportion indicates that $E_{common}$ lacks sufficient data. Thus, reward is given to cells that match that entity's locations. Rather than specific entities, the situation could be that a particular region is seeing unusually fast growth or death of substrates. The speed and acceleration of each substrate can be used to further impact the reward at each cell. In this example, the Analyst is entirely offline and only uses the robot's logs to update the coverage counts of each entity. Despite being much less sophisticated than the previous example, this still fulfills the role of Analyst in data-driven directing of scientific missions. 
+The \textit{Analyst} need not use sophisticated machine learning or data mining to fulfill the role and provide substantial autonomy to a system. What is critical is that data be used to assign reward and select targets. A simpler \textit{Analyst} that uses occasional updates from internet sources for analysis used in offline mission plan is described next. This \textit{Analyst} is, for example, interested in collecting data on seagrasses. Every day, a new satellite image is available that captures the water body of interest. The \textit{Analyst} has studied the history of this imagery. It has some image processing technique for extracting several substrate entities, which include seagrasses. These entities follow the notation $E_{name}$ or $E_{index}$, so that example entities are $E_{sandy}$, $E_{spartina}$, and $E_{5}$. The \textit{Analyst} can use this data to generate a grid that assigns reward to all cells in the environment. Reward can incorporate multiple characteristics. Consider an uncommon entity $E_{rare}$ that is present is today's image. The presence of $E_{rare}$ gives reward to that cell and those nearby. Consider also a mundane $E_{common}$ that has not been recently surveyed in favour of more interesting entities. To avoid stale data and to maintain ongoing observations, the sliding window of entity coverage proportion indicates that $E_{common}$ lacks sufficient data. Thus, reward is given to cells that match that entity's locations. Rather than specific entities, the situation could be that a particular region is seeing unusually fast growth or death of substrates. The speed and acceleration of each substrate can be used to further impact the reward at each cell. In this example, the \textit{Analyst} is entirely offline and only uses the robot's logs to update the coverage counts of each entity. Despite being much less sophisticated than the previous example, this still fulfills the role of \textit{Analyst} in data-driven directing of scientific missions. 
 
-\subsubsection{Surveyor Agent}
+\subsubsection{\textit{Surveyor} Agent}
 
-Given the weighted targets and environment-reward mapping, the Surveyor is responsible for generating a mission to conduct the scientific survey, Mission planning can take on many forms. It is essentially a path planner that handles multiple goals and includes point-to-point and coverage planing. This can be a single path planning module or split into planning subtasks. The all-in-one approach is used in a dynamic programming based path planner where a number of coverage regions and the paths between regions is solved as a single unit \cite{garcia:planner}. This has optimality advantages since the planning is aware of the entire mission. However, it becomes intractable as the number of nodes to visit increases. Note that the work does not consider terrain, substantially alleviating the computational burden. A basic framework for a mission planner that works with subplans is one where the mission is a sequence of path segments, each either point-to-point (called a \textit{Goto} path in this text) or \textit{Coverage} segment. Path planners dedicated to \textit{Goto} and \textit{Coverage} are invoked by the mission planner. Technically, by this definition a mission planner is itself a form of path planner since the output can reduce to a single mission path. But, here, a mission planner refers to a higher level of planning that calls path planner modules. While the result is a path, the Surveyor has constraints that are incorporated into the mission planning. The Surveyor may have to remove or modify requested targets to ensure that the mission is both feasible and safe. For example, the Analyst may request targets $(1, 2, 3)$, but the Surveyor determines that no feasible mission can accommodate each target. One option is to remove the nodes that make the mission feasible but with the least impact on the mission's reward. Perhaps the solution is $(1, 3)$. Or, the Surveyor may visit each target, but conduct the \textit{Coverage} planner to visit a proportion of each target so that some of each is visited, but less time required for the sampling. In summary, the Surveyor uses mission planning (which calls path planning modules) to create missions that visit targets under optimization and constraint considerations. 
+Given the weighted targets and environment-reward mapping, the \textit{Surveyor} is responsible for generating a mission to conduct the scientific survey, Mission planning can take on many forms. It is essentially a path planner that handles multiple goals and includes point-to-point and coverage planing. This can be a single path planning module or split into planning subtasks. The all-in-one approach is used in a dynamic programming based path planner where a number of coverage regions and the paths between regions is solved as a single unit \cite{garcia:planner}. This has optimality advantages since the planning is aware of the entire mission. However, it becomes intractable as the number of nodes to visit increases. Note that the work does not consider terrain, substantially alleviating the computational burden. A basic framework for a mission planner that works with subplans is one where the mission is a sequence of path segments, each either point-to-point (called a \textit{Goto} path in this text) or \textit{Coverage} segment. Path planners dedicated to \textit{Goto} and \textit{Coverage} are invoked by the mission planner. Technically, by this definition a mission planner is itself a form of path planner since the output can reduce to a single mission path. But, here, a mission planner refers to a higher level of planning that calls path planner modules. While the result is a path, the \textit{Surveyor} has constraints that are incorporated into the mission planning. The \textit{Surveyor} may have to remove or modify requested targets to ensure that the mission is both feasible and safe. For example, the \textit{Analyst} may request targets $(1, 2, 3)$, but the \textit{Surveyor} determines that no feasible mission can accommodate each target. One option is to remove the nodes that make the mission feasible but with the least impact on the mission's reward. Perhaps the solution is $(1, 3)$. Or, the \textit{Surveyor} may visit each target, but conduct the \textit{Coverage} planner to visit a proportion of each target so that some of each is visited, but less time required for the sampling. In summary, the \textit{Surveyor} uses mission planning (which calls path planning modules) to create missions that visit targets under optimization and constraint considerations. 
 
-\subsubsection{Navigator Agent}
+\subsubsection{\textit{\textit{Navigator}} Agent}
 
-The Navigator implements mission plans and generates the motor commands that operate the robot. This necessarily occurs online and onboard the vehicle. The agent works directly with hardware, issuing commands and reacting to sensor readings. The typical navigator is a feedback controller using algorithms such as Pure Pursuit for trajectory following and Extended Kalman Filter for state estimation (\cite{purepursuit_kalman:2009}, \cite{kalman:naeem:2009}, \cite{gnss:gao:2016}). Also needed is online detection and reaction to problematic situations \cite{linearprog:len:2013}, . The Surveyor can generate plans that are estimated to be feasible and collision-free, but the Navigator uses sensor feedback to ensure the safety of the vehicle and avoid obstacles or other detected dangers. An autonomous vehicle is expected to be working in environments populated by other watercraft, both human and robot-piloted. A sufficiently capable Navigator is aware of and follows marine traffic regulations for safely interacting with other vehicles \cite{naeem2012colregs}, \cite{wang:2018}. While a requirement of any autonomous vehicle, robot navigation is very well developed and is not the focus of this research. The existence of suitable navigation systems is assumed, and the Analyst and Surveyor roles are developed to work with these Navigators. 
+The \textit{\textit{Navigator}} implements mission plans and generates the motor commands that operate the robot. This necessarily occurs online and onboard the vehicle. The agent works directly with hardware, issuing commands and reacting to sensor readings. The typical \textit{\textit{Navigator}} is a feedback controller using algorithms such as Pure Pursuit for trajectory following and Extended Kalman Filter for state estimation (\cite{purepursuit_kalman:2009}, \cite{kalman:naeem:2009}, \cite{gnss:gao:2016}). Also needed is online detection and reaction to problematic situations \cite{linearprog:len:2013}, . The \textit{Surveyor} can generate plans that are estimated to be feasible and collision-free, but the \textit{\textit{Navigator}} uses sensor feedback to ensure the safety of the vehicle and avoid obstacles or other detected dangers. An autonomous vehicle is expected to be working in environments populated by other watercraft, both human and robot-piloted. A sufficiently capable \textit{\textit{Navigator}} is aware of and follows marine traffic regulations for safely interacting with other vehicles \cite{naeem2012colregs}, \cite{wang:2018}. While a requirement of any autonomous vehicle, robot navigation is very well developed and is not the focus of this research. The existence of suitable navigation systems is assumed, and the \textit{Analyst} and \textit{Surveyor} roles are developed to work with these \textit{\textit{Navigator}}s. 
 
 \subsection{Sacrificing optimality for feasibility}
 
-The techniques used in this thesis are united in their shared focus on sacrificing optimal results to solve computationally intractable problems. Exhaustive algorithms are replaced by heuristic ones and heuristics replaced by meta-heuristic. This theme is explored throughout the text. The Analyst, for example, selects targets with a simple scheme whose development was guided by intuitive assumptions regarding the desired region characteristics. Targets are selected using the quadtree algorithm, which recursively divides the space into four equally-sized subregions. The basic principle is that path planning for large, terrain-free regions is extremely quick and generates much reward. Alternatively, regions with obstacles require intensive coverage planning; these regions are made small so that their selection is only worth it in cases of exceptional reward. A critic can easily fault this method: how is it that equally dividing the space on each iterations gives the best result? Would not selectively-sized regions offer granular control to maximize reward within the top $k$ regions (see Figure \ref{fig:quadtree_compare}). The criticism is valid, but the alternatives are either exhaustive (intractable) or are sensitive to settings in other ways. For example, a clustering approach may appear more rigorous but is still affected by parameters and initial conditions: optimizing the parameters is, again, requiring large computational effort. Image processing and computer vision are fields that have widely accepted the utility of non-optimal, but practical results. Whether determined by the Analyst or set by human experts, the reward is ultimately subjective. Maximizing the reward value does not necessarily mean that the maximally useful scientific information was gained. With this mind, overemphasizing the reward can be misguided. Rather, this work uses the reward to guide the overall mission but accepts that the robot encounters areas of both high and low reward; both of which are believed to have their usefulness. This work prioritizes simpler approaches that can empower efficient decision-making of autonomous agents.  While the experiments presented herein were performed offline on laboratory hardware, the goal is to partially or completely implement the system on the robot for online decision-making. This vision motivates the search for efficient techniques that enable useful investigations over peak optimality. 
+The techniques used in this work are united in their shared focus on sacrificing optimal results to solve computationally intractable problems. Exhaustive algorithms are replaced by heuristic ones and heuristics replaced by meta-heuristic. This theme is explored throughout the text. The \textit{Analyst}, for example, selects targets with a simple scheme whose development was guided by intuitive assumptions regarding the desired region characteristics. Targets are selected using the quadtree algorithm, which recursively divides the space into four equally-sized subregions. The basic principle is that path planning for large, terrain-free regions is extremely quick and generates much reward. Alternatively, regions with obstacles require intensive coverage planning; these regions are made small so that their selection is only worth it in cases of exceptional reward. A critic can easily fault this method: how is it that equally dividing the space on each iterations gives the best result? Would not selectively-sized regions offer granular control to maximize reward within the top $k$ regions (see Figure \ref{fig:quadtree_compare}). The criticism is valid, but the alternatives are either exhaustive (intractable) or are sensitive to settings in other ways. For example, a clustering approach may appear more rigorous but is still affected by parameters and initial conditions: optimizing the parameters is, again, requiring large computational effort. Image processing and computer vision are fields that have widely accepted the utility of non-optimal, but practical results. Whether determined by the \textit{Analyst} or set by human experts, the reward is ultimately subjective. Maximizing the reward value does not necessarily mean that the maximally useful scientific information was gained. With this mind, overemphasizing the reward can be misguided. Rather, this work uses the reward to guide the overall mission but accepts that the robot encounters areas of both high and low reward; both of which are believed to have their usefulness. This work prioritizes simpler approaches that can empower efficient decision-making of autonomous agents.  While the experiments presented here were performed offline on laboratory hardware, the goal is to partially or completely implement the system on the robot for online decision-making. This vision motivates the search for efficient techniques that enable useful investigations over peak optimality. 
 
 %%%%%%%%%%%%%%%%%%%%%%
 % Quadtree example %
@@ -107,7 +111,7 @@ The techniques used in this thesis are united in their shared focus on sacrifici
     \begin{subfigure}[b]{0.475\textwidth}
         \centering
         \includegraphics[width=\textwidth]{quadtree_exA.png}
-        \caption{Target regions selected by Analyst \\ (more efficient, lower reward)}    
+        \caption{Target regions selected by \textit{Analyst} \\ (more efficient, lower reward)}    
         \label{fig:quadtree_a}
     \end{subfigure}
     \hfill
@@ -117,7 +121,7 @@ The techniques used in this thesis are united in their shared focus on sacrifici
         \caption{Target regions selected manually \\ (less efficient, higher reward)}   
         \label{fig:quadtree_b}
     \end{subfigure}
-    \caption[Quadtree algorithm: efficient but sub-optimal.]{Analyst's efficient quadtree results and a higher-reward manual target region selection.}
+    \caption[Quadtree algorithm: efficient but sub-optimal.]{\textit{Analyst}'s efficient quadtree results and a higher-reward manual target region selection.}
     \label{fig:quadtree_compare}
 \end{figure}
 %%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -127,7 +131,7 @@ The techniques used in this thesis are united in their shared focus on sacrifici
 \section{Contributions}
 \label{section:contributions}
 
-This research has explored the problem of USV autonomy through the development of two collaborating autonomous agents: an Analyst and Surveyor. The Analyst uses (simulated) aerial images to assign a reward value to each cell in a grid that represents the region that the USV explores. The Analyst then uses the reward grid to find regions that offer a high ratio of reward over area and that facilitate efficient coverage. The Surveyor generates mission plans that visit as many targets as possible, given constraints on the maximum duration and work. Also, the missions take advantage of opportunities where paths can be made to collect additional reward while remaining feasible. Using the system composed of these agents, the research has posed and investigated several research questions as follows. A major contribution of this work is the development of a modular framework for Analyst and Surveyor agents so that a variety of techniques can be inserted and evaluated. A second contribution is the implementation of a fitness function for metaheuristic path planning that incorporates dynamic water currents for work minimization as well as the reward grid for reward maximization. The other contributions are the answers to these questions, as will be discussed in the results. 
+This research has explored the problem of USV autonomy through the development of two collaborating autonomous agents: an \textit{Analyst} and \textit{Surveyor}. The \textit{Analyst} uses (simulated) aerial images to assign a reward value to each cell in a grid that represents the region that the USV explores. The \textit{Analyst} then uses the reward grid to find regions that offer a high ratio of reward over area and that facilitate efficient coverage. The \textit{Surveyor} generates mission plans that visit as many targets as possible, given constraints on the maximum duration and work. Also, the missions take advantage of opportunities where paths can be made to collect additional reward while remaining feasible. Using the system composed of these agents, the research has posed and investigated several research questions as follows. A major contribution of this work is the development of a modular framework for \textit{Analyst} and \textit{Surveyor} agents so that a variety of techniques can be inserted and evaluated. A second contribution is the implementation of a fitness function for metaheuristic path planning that incorporates dynamic water currents for work minimization as well as the reward grid for reward maximization. The other contributions are the answers to these questions, as will be discussed in the results. 
 
 \begin{itemize}
     \item When using metaheuristic algorithms for \textit{Goto} planning, it has to consider obstacle avoidance, duration minimization, work minimization, and reward maximization. Reward maximization may be opposed to the duration and work minimization. Do the results shown acceptable convergence and repeatibility?
@@ -136,7 +140,7 @@ This research has explored the problem of USV autonomy through the development o
 
     \item Can the weights on the significance of work and reward criteria be set to influence the \textit{Goto} path planning toward a desired path behavior? And are the weights that achieve this behavior transferable across multiple situations since it not reasonable to tune them for each path planning task. 
 
-    \item The presence of water currents impact both the Surveyor and Navigator of a USV. A forecast of water currents is expected to impact mission planning, but does periodic updating of the water currents appreciably affect the estimated work? 
+    \item The presence of water currents impact both the \textit{Surveyor} and \textit{Navigator} of a USV. A forecast of water currents is expected to impact mission planning, but does periodic updating of the water currents appreciably affect the estimated work? 
     
     \item The disadvantage to planning in segments is that each segment is dependent on previous segments, as will be discussed. Instead of evaluating every possible situation, can certain dependencies be ignored and still achieve effective mission planning?
     
@@ -148,7 +152,7 @@ Much of the early work in USV research was initiated during WWII by the U.S. Nav
 
 As remote sensing systems continue to reduce the human effort in data collection, there is great potential for USVs in oceanographic and marine science applications. A selection of recent examples are as follows. A USV with a sidescan sonar was used in \cite{klemens2017development} for mapping eelgrass in Southern California. A bathymetric map of a lake bed was generated by a USV in \cite{watanabe2016field}. The next example in particular demonstrates the unique character of a USV. The water surface is an air/water interface and is a habitat of specific scientific interest; this region is exactly the operating domain of a USV. A mission is described in \cite{powers2017mobile} where surface temperatures were sampled to produce a high resolution temperature profile of the air/water interface. These example are among many that suggest the growing interest in USVs for scientific applications. 
 
-While numerous successful USV missions have been demonstrated, they have not seen the widespread acceptance of ground and aerial robots. There are several open research problems that impede the proliferation of USVs \cite{bertram2008unmanned}, \cite{liu:2016}. It is important to remain in contact with deployed USVs in order to make effective use of the remote presence and to respond to emergency situations. The significant cost of over-the-horizon communications for extended USV range is prohibitive to most non-military users. Another issue the logistic complexity of USV deployment and recovery. All but the most shallow-hulled vessels have to exert caution near the shore; some coastal environments may require tedious protocols for deployment of the vehicles. For some tasks, users may find that it is easier to simply use a manned boat or even wade if appropriate. The marine environment is highly corrosive, obstacle-ridden, and subject to sudden and dramatic changes in sea state; these and other factors put USVs at risk and demand reliable and seaworthy vehicles that can survive numerous missions in order to be worth the monetary and logistic cost. There is also a lack of suitable protocols governing USVs that define how they interact with other marine traffic \cite{manley2008unmanned}. Each USV is a stand-alone system whose behavior cannot be reliably predicted by other autonomous vehicles or human ship operators. Finally, the lack of sophisticated autonomy is a major barrier to USV progress. As with other robot modalities, significant attention has been given to autonomous path following control, obstacle detection and avoidance, and path planning. Current USV autonomous systems are largely behavior based and have limited onboard mission planning \cite{liu:2016}. Instead, the USVs either perform simple, tedious jobs or are very human-directed \cite{manley2008unmanned}. For example, in a typical survey mission, a USV is given either a set of human-input waypoints or a search region. The USV executes this mission and returns to base where data is then processed offline. Humans are highly involved in all stages of mission execution: setting goals, verifying progress, processing and evaluating results, and re-deploying the vehicle if needed. The vehicle itself has autonomy for mission execution, but mission planning is almost entirely driven by humans. The vehicle is blind in the sense that it executes the mission, but does not consider the safety and feasibility. 
+While numerous successful USV missions have been demonstrated, they have not seen the widespread acceptance of ground and aerial robots. There are several open research problems that impede the proliferation of USVs \cite{bertram2008unmanned, liu:2016}. It is important to remain in contact with deployed USVs in order to make effective use of the remote presence and to respond to emergency situations. The significant cost of over-the-horizon communications for extended USV range is prohibitive to most non-military users. Another issue the logistic complexity of USV deployment and recovery. All but the most shallow-hulled vessels have to exert caution near the shore; some coastal environments may require tedious protocols for deployment of the vehicles. For some tasks, users may find that it is easier to simply use a manned boat or even wade if appropriate. The marine environment is highly corrosive, obstacle-ridden, and subject to sudden and dramatic changes in sea state; these and other factors put USVs at risk and demand reliable and seaworthy vehicles that can survive numerous missions in order to be worth the monetary and logistic cost. There is also a lack of suitable protocols governing USVs that define how they interact with other marine traffic \cite{manley2008unmanned}. Each USV is a stand-alone system whose behavior cannot be reliably predicted by other autonomous vehicles or human ship operators. Finally, the lack of sophisticated autonomy is a major barrier to USV progress. As with other robot modalities, significant attention has been given to autonomous path following control, obstacle detection and avoidance, and path planning. Current USV autonomous systems are largely behavior based and have limited onboard mission planning \cite{liu:2016}. Instead, the USVs either perform simple, tedious jobs or are very human-directed \cite{manley2008unmanned}. For example, in a typical survey mission, a USV is given either a set of human-input waypoints or a search region. The USV executes this mission and returns to base where data is then processed offline. Humans are highly involved in all stages of mission execution: setting goals, verifying progress, processing and evaluating results, and re-deploying the vehicle if needed. The vehicle itself has autonomy for mission execution, but mission planning is almost entirely driven by humans. The vehicle is blind in the sense that it executes the mission, but does not consider the safety and feasibility. 
 
 The lack of onboard mission planning severely limits the potential of USVs. It is desirable to have USVs in operation that can be given generic science goals, and that can use local perception, external data sources, and planning algorithms to achieve these goals with minimal human guidance. This is particularly challenging for marine craft as they are subject to dynamic wind and current forces, sudden weather events, tide fluctuation, other water traffic, and obstacles above and below the water surface. These and other factors of the marine environment must be taken into consideration to ensure efficient mission success as well as safety of the vehicle and marine traffic in its vicinity. Some aspects, such as navigational safety and energy efficiency, are largely independent of the autonomous mission. 
 
@@ -160,31 +164,34 @@ An important step toward greater autonomy, CARACaS demonstrates a high level of 
 
 \chapter{System Design}
 
-A system is created that implements the Analyst and Surveyor to study seafloor \textit{entities}, such as types of seagrasses. The system so far is entirely within simulation. The region and water currents forecasts are taken from real-world data sources, but the entities are simulated as will be described. An overview of the system is shown in \ref{fig:system_overview}. The system made up of a number of separate modules, most of which may be run independently. For example, a particular path planner module may be used as a stand-alone program rather than as a part of a larger mission planning program. Similarly, other path planners can be introduced and chosen selectively. Each of the three intelligent agents previous described are represented by sets of system modules. The Analyst has programs and utilities for determining the reward, \textit{interestingness} of specific targets or cells in the environment's grid representation. It can generate a set of target regions for \textit{Coverage} tasks that will be given to the Surveyor as mission planning goals. The mission generated by the Surveyor is then used by the Navigator who handles the onboard following of the plan as specific motor commands for the robot. This focus of this paper is on the Surveyor's mission planning since it has been given most attention with results available for meaningful analysis. The Analyst's programs and results will be discussed, but less analysis is done since it currently works with simulated data and its optimality is difficult to define.
+A system is created that implements the \textit{Analyst} and \textit{Surveyor} to study underwater \textit{entities}, such as types of seagrasses. The system so far is entirely within simulation. The region and water currents forecasts are taken from real-world data sources, but the entities are simulated as will be described. An overview of the system is shown in \ref{fig:system_overview}. The system made up of a number of separate modules, most of which may be run independently. For example, a particular path planner module may be used as a stand-alone program rather than as a part of a larger mission planning program. Similarly, other path planners can be introduced and chosen selectively. Each of the three intelligent agents previously described are represented by sets of system modules. The \textit{Analyst} has programs and utilities for determining the reward, \textit{interestingness} of specific targets or cells in the environment's grid representation. It can generate a set of target regions for \textit{Coverage} tasks that will be given to the \textit{Surveyor} as mission planning goals. The mission generated by the \textit{Surveyor} is then used by the \textit{Navigator} who handles the onboard following of the plan as specific motor commands for the robot. This focus here is on the \textit{Surveyor}'s mission planning since it has been given most attention with results available for meaningful analysis. The \textit{Analyst}'s programs and results will be discussed, but less analysis is done since it currently works with simulated data and its optimality is difficult to define.
 
 \begin{figure}[H]
-\includegraphics[width=\textwidth]{system_overview.png}
+\includegraphics[width=\textwidth]{system_overview.eps}
 \caption[System as the collaboration of multiple autonomous agents.]{System as the collaboration of multiple autonomous agents.}
 \label{fig:system_overview}
 \end{figure}
 
-\section{Analyst Agent}
+\section{\textit{Analyst} Agent}
 
-The Analyst implemented in this research is not applied to a specific real-world problem, but rather demonstrates the role's concept using simulated data. The data is a sequence of images, where each color in the image represents an entity and so each cell is associated with a single entity. A completely white cell indicates the absence of an entity, and a black cell indicates that the value is unknown. Only the red value is used for entity assignment, which limits the number of possible entities to 255. The other color values could later be used to represent additional information such as certainty of the identification. (HSV could be used to more intuitively communicate the purpose of the color values; ie: a lower saturated pixel representing less certainty). Since the Analyst needs to assign reward values to all cells in the world representation's grid, an image is a reasonable method for storing entity information. A sequence of images is given to the Analyst, where each image represents a snapshot of the entities at a particular time. A cellular automata is used to perturb the image by adding and remove pixels based on growth and decay rates of each entity type. There are also randomly generated events such as a sudden appearance of some pattern; these represent anomalies that should be noticed by the analyst. The author of this thesis has previously done work where a USV performed online detection of seagrass using an RGB camera. The output is an image where each pixels's color is code for either \textit{seagrass}, \textit{not seagrass}, \textit{unsure}, or \textit{unchecked}. This is an example of real-life data that could be used. The simulated data was used since there is a lack of historical imagery, which is used in the procedure described below. 
+The \textit{Analyst} is not applied to a specific real-world problem, but rather demonstrates the role's concept using simulated data. The data is a sequence of images, where each color in the image represents an entity and so each cell is associated with a single entity. A completely white cell indicates the absence of an entity, and a black cell indicates that the value is unknown. Only the red value is used for entity assignment, which limits the number of possible entities to 255. The other color values could later be used to represent additional information such as certainty of the identification. (HSV could be used to more intuitively communicate the purpose of the color values; ie: a lower saturated pixel representing less certainty). Since the \textit{Analyst} needs to assign reward values to all cells in the world representation's grid, an image is a reasonable method for storing entity information. A sequence of images is given to the \textit{Analyst}, where each image represents a snapshot of the entities at a particular time. A cellular automata is used to perturb the image by adding and removing pixels based on growth and decay rates of each entity type. There are also randomly generated events such as a sudden appearance of some pattern; these represent anomalies that should be noticed by the \textit{Analyst}. The author of this work has previously done work where a USV performed online detection of seagrass using an RGB camera. The output is an image where each pixels's color is code for either \textit{seagrass}, \textit{not seagrass}, \textit{unsure}, or \textit{unchecked}. This is an example of real-life data that could be used. The simulated data was used since there is a lack of historical imagery, which is used in the procedure described below. 
 
-This example Analyst employs a simple method of reward assignment. The key points is that is uses both the most recent image as well as recent history in its calculation. Each entity has a weight listed in a table. Here, the table was manually created since the scenario is entirely fabricated. With a sufficiently large history of images, entities could be generated from unsupervised learning and their weight based on some scientific criteria. However, it is assumed that for this example it is either the case that such automatic assessment has taken place or the weights are informed by an expert. There is no requirement that the Analyst is not given some initial human-input information about its environment and goals. It just has to be capable, as a baseline, of automatic reward assignment and target selection. 
+This example \textit{Analyst} employs a simple method of reward assignment. The key points is that it uses both the most recent image as well as recent history in its calculation. Each entity has a weight listed in a table. Here, the table was manually created since the scenario is entirely fabricated. With a sufficiently large history of images, entities could be generated from unsupervised learning and their weight based on some scientific criteria. However, it is assumed that for this example it is either the case that such automatic assessment has taken place or the weights are informed by an expert. There is no requirement that the \textit{Analyst} is not given some initial human-input information about its environment and goals. It just has to be capable, as a baseline, of automatic reward assignment and target selection. 
 
-The entire environment is segmented into blocks where each block contains a number of cells. The density of entities in each block is used to add reward to each cell in the block. Thus, cells nearby to entities get some reward, proportional to the total strength of weighted entities in that block. The idea is that if the imagery observes something interesting, the area surrounding is also interesting since it may contain unobserved entities or have characteristics that help explain the entities presence. Next, the speed and acceleration of entity growth or decay within that block is calculated and used to add additional reward to the cells. The importance of speed and acceleration of each entity type has its own weight: some entities may have been observed to be fast and this is not interesting. The Analyst records and outputs a separate grid of the reward for each entity type. The total reward of a cell is the summation of the reward in all grids at that cell. Algorithm \ref{alg:reward_assignment} shows this process more concretely. 
+The entire environment is segmented into blocks where each block contains a number of cells. The density of entities in each block is used to add reward to each cell in the block. Thus, cells nearby to entities get some reward, proportional to the total strength of weighted entities in that block. The idea is that if the imagery observes something interesting, the area surrounding is also interesting since it may contain unobserved entities or have characteristics that help explain the entities presence. Next, the speed and acceleration of entity growth or decay within that block is calculated and used to add additional reward to the cells. The importance of speed and acceleration of each entity type has its own weight: some entities may have been observed to be fast and this is not interesting. The \textit{Analyst} records and outputs a separate grid of the reward for each entity type. The total reward of a cell is the summation of the reward in all grids at that cell. 
 
-In addition to sharing the reward grids with the Surveyor, the Analyst uses them to generate target region intended to be used in \textit{Coverage} planning. A quadtree algorithm is applied on the environment's grid to generate squares that represent coverage areas. Quadtree starts by splitting rectangle into four equally sized sub-rectangles, as shown in Algorithm \ref{alg:quadtree}. It recursively splits each of those rectangles until a base case is reached. The quadtree enforces a certain maximum grid size in order to not give the Surveyor unreasonable intractable targets. There is also a minimize size because some a useful coverage region has some area to actually cover. The base case of the quadtree algorithm has three opportunities for termination. If the maximum size limit is reached, 90\% of the cells have entities of interest, and there is no terrain present in the region: terminate. If the maximum size limit is reached and it has not yet terminated, this is because there is terrain. Smaller regions with terrain are desired since the strategy for solving coverage paths with terrain present is much more sensitive to the size of the region. The second base case is that the minimum region size is reached: terminate. Terrain is present, but at a more manageable region size. Finally, if the region is at least 90\% terrain, then the region is not worth visiting: terminate. The top $k$ targets are made available to the Surveyor, where $k$ is some arbitrary number that exists due the practical limitation that additional targets exponentially increase the computational effort required by the Surveyor. 
+In addition to sharing the reward grids with the \textit{Surveyor}, the \textit{Analyst} uses them to generate target regions intended to be used in \textit{Coverage} planning. 
 
-While the intention is to present an abstract methodology, the Analyst was developed with seagrass studies in mind. Sudden patterns of loss are likely indicators of seagrass bed scarring or other source of damage. Thus, the speed and acceleration of loss can guide the vehicle to investigate. There are also "no fast" seagrasses, so sudden growth would warrant attention. This mentioned is to clarify some of the choices made and to suggest that there is not a single solution to the Analyst implementation. 
+The quadtree algorithm is used to partition the reward grid such that each partition is a potential target region. Quadtree recursively divides the grid into subgrids until one of the base cases is reached. The specification of base cases controls the characteristics of the resulting coverage regions available to choose from as targets. Because of both planning complexity and the time it takes to physically traverse a region, an upper limit, $L_u$, is placed on the partition size, $P_n$. Since planning and executing terrain-free region coverage is trivial, terrain-free regions are allowed to stop at $L_u$ if the partitions meet other requirements. A terrain-free region of allowed size may be insufficient reward to make a desirable target region. Either a reward threshold, $T_r$, or percentage of cells containing entities, $T_e$, should be met before stopping only based on $L_u$. Both or only one of the criteria may be enabled. 
+Incorporating these criteria, base case (1) is terrain-free, $P_n \leq L_u$, and either the total reward is $\geq T_r$ or proportion of cells with entities is $\geq T_e$. This base case yields terrain-free target regions of desired size and reward or entity presence. A lower limit, $L_l$, defines the smallest allowed regions. Regions with terrain should be kept small since \textit{Coverage} planning complexity increases exponentially with additional cells in regions with terrain. Base case (2) is when $P_n \leq L_l$. Because of the smaller size, regions with terrain are only selected if they have large reward relative to other regions. It is possible to reach the lower limit with terrain-free regions because of insufficient reward. A final base case, (3), is included only to reduce unneeded recursion. If the proportion of cells with terrain exceeds a maximum, $O_n$, then the obstacle-dense region does not need to be divided further. 
 
-\section{Surveyor Agent}
+While the intention is to present an abstract methodology, the \textit{Analyst} was developed with seagrass studies in mind. Sudden patterns of loss are likely indicators of seagrass bed scarring or other source of damage. Thus, the speed and acceleration of loss can guide the vehicle to investigate. There are also "no fast" seagrasses, so sudden growth would warrant attention. This mentioned is to clarify some of the choices made and to suggest that there is not a single solution to the \textit{Analyst} implementation. 
+
+\section{\textit{Surveyor} Agent}
 
 \subsection{Environmental Representation}
 
-A finite rectangular region is selected as the robot's exploration domain and is divided into a discrete grid of equally sized cells. The resolution impacts the planning quality in two ways. If the cellsize exceeds the diameter of the sensor, then the path planner's coverage estimation differs from reality. Second, more accurate distance, duration, work, and reward estimates are achieved at higher resolutions. Multiple grids are used to represent different characteristics of the environment. The grids used by the Surveyor implemented in this system are listed in Table \ref{tbl:grids}. 
+A finite rectangular region is selected as the robot's exploration domain and is divided into a discrete grid of equally sized cells. The resolution impacts the planning quality in two ways. If the cellsize exceeds the diameter of the sensor, then the path planner's coverage estimation differs from reality. Second, more accurate distance, duration, work, and reward estimates are achieved at higher resolutions. Multiple grids are used to represent different characteristics of the environment. The grids used by the \textit{Surveyor} implemented in this system are listed in Table \ref{tbl:grids}. 
 
 \begin{table}[H]\small
 \begin{tabular}{|l|l|}
@@ -197,150 +204,150 @@ $G_{magnitude}$ & Cell values are the water current forecast's magnitude for tha
 \hline
 $G_{direction}$ & Cell values are the water current forecast's direction for that location \\
 \hline
-$G_{reward}$    & Cell values are the reward for that location, as determined by the analyst \\    
+$G_{reward}$    & Cell values are the reward for that location, as determined by the \textit{Analyst} \\    
 \hline
 \end{tabular}
-\caption{Descriptions of grids used by the Surveyor to represent the environment.}
+\caption{Descriptions of grids used by the \textit{Surveyor} to represent the environment.}
 \label{tbl:grids}
 \end{table}
 
 
 \section{Path Planning}
 
-Path planning forms the building blocks of mission planning, so is presented first. Characteristics of path planning, such as its limitations and dependencies, motivate various choices in mission planner design. Two types of path planner are discussed and an implementation of both exists in the system and are used in mission planning.
+Path planning forms the building blocks of mission planning, so is presented first. Characteristics of path planning, such as its limitations and dependencies, motivate various choices in the mission planner design. Two types of path planner are discussed and an implementation of both exists in the system and are used in mission planning.
 
 \subsection{Goto Path Planner} \label{section:goto}
 
-The \textit{Goto} planning module is responsible for generating point-to-point paths between a start and stop location. The module is used by the mission planners to plan mission segments between nodes (targets, start, and stop locations). Due to the complexity of path planning (NP-hard), heuristic and meta-heuristic algorithms have become standard over optimal methods such as breadth-first search which enumerates all possible paths. Because the scientific missions are expected to operate over very large areas, the search space will be massive. This motivates the emphasis on meta-heuristic algorithms that dramatically reduce the search space at the expense of some optimality. The experiments in this text use a 1000x1093 grid which is very large for planning, could still be called low resolution for the 229,622,675.423 $m^2$ region. The actual grid size for real mission should be such that the sensor covers a cell entirely if complete coverage is required. Meta-heuristic path planning is well-established to give approximately optimal results in point-to-point planning that minimizes distance, duration and avoids obstacles \cite{hussein2012}. Rather than repeat this known result, the investigation here focuses on a comparison of algorithms and the effect of including the criteria of minimizing work and maximizing reward. Does one algorithm perform better than the others and is this affected by the addition of work and reward optimization? Can the weights be manipulated to achieved a desired planning behavior that is reliable across multiple situations? Four common meta-heuristic algorithms are compared to select the best to be the \textit{Goto} planner's default algorithm: Genetic Algorithm (GA), Differential Evolution (DE), Particle Swarm Optimization (PSO), and Artificial Bee Colony (BEE). All four are implemented using the PyGMO optimization library\cite{PyGMO}. Path attributes (distance, duration and work) are measured with respect the the cells rather than the actual distance. They should be converted appropriately for field use.
+The \textit{Goto} planning module is responsible for generating point-to-point paths between a start and stop location. The module is used by the mission planners to plan mission segments between nodes (targets, start, and stop locations). Due to the complexity of path planning (NP-hard), heuristic and meta-heuristic algorithms have become standard over optimal methods such as breadth-first search which enumerates all possible paths. Because the scientific missions are expected to operate over very large areas, the search space will be massive. This motivates the emphasis on meta-heuristic algorithms that dramatically reduce the search space at the expense of some optimality. The experiments in this text use a 1000x1093 grid which is very large for planning, and could still be called low resolution for the 229,622,675 $m^2$ region. The actual grid size for real missions should be such that the sensor covers a cell entirely if complete coverage is required. Meta-heuristic path planning is well-established to give approximately optimal results in point-to-point planning that minimizes distance, duration and avoids obstacles \cite{hussein2012}. Rather than repeat this known result, the investigation here focuses on a comparison of algorithms and the effect of including the criteria of minimizing work and maximizing reward. Does one algorithm perform better than the others and is this affected by the addition of work and reward optimization? Can the weights be manipulated to achieved a desired planning behavior that is reliable across multiple situations? Four common meta-heuristic algorithms are compared to select the best to be the \textit{Goto} planner's default algorithm: Genetic Algorithm (GA), Differential Evolution (DE), Particle Swarm Optimization (PSO), and Artificial Bee Colony (BEE). All four are implemented using the PyGMO optimization library \cite{PyGMO}. Path attributes (distance, duration and work) are measured with respect the the cells rather than the actual distance. They should be converted appropriately for field use. In all four cases, PyGMO's default parameters are used. Additional work could be done to tune these further, but the defaults are ones that have been observed to be generally effective, and tuning has the possibility of overfitting for the specific tasks used in the experiments. 
 
 \subsubsection{Genetic Algorithm}
 
-GA is based on the evolutionary concept of natural selection to iteratively evolve toward an optimal solution \cite{ga:cao:2016}. The core of GA is that survival of the fittest is used to transform a population of individuals, each a potential solution, into another population with higher average fitness. After evolution proceeds for some time, the fitness should become stable: the fitness of the population is approximately (possibly local) optimum and receive little or no benefit from additional iterations. The individual with highest fitness is chosen as the problem solution. The mechanisms behind GA are the selection, mutation, and crossover operations. Selection is process of choosing which individual's solutions are to be used for constructing the next generation. Individuals are ranked by their fitness and the probability of selection is proportional to the individual's fitness. New individuals are formed from those selected using crossover and mutation. The crossover operation combines elements of solutions (called genes) in combination, with the hope that elements from two fit solutions can be combined to yield an even better solution. While not all of these combinations will have better fitness, the selection process will favor the better results: guiding the population in increasingly fitter solutions on average. Mutation is the operation of randomly adding, deleting, and transforming genes. Many mutations will be harmful, but again, selection will promote the survival of those that improve the population. The result of GA is sensitive to the rate of mutation and crossover. An overemphasis on crossover may lead to premature convergence to an optimal solution, since the space is insufficiently explores. But an overemphasis of mutation may not take advantage of fit solutions and delay convergence. An overview of the GA process is in Algorithm \ref{GA}.
+GA is based on the evolutionary concept of natural selection to iteratively evolve toward an optimal solution \cite{ga:cao:2016}. The core of GA is that survival of the fittest is used to transform a population of individuals, each a potential solution, into another population with higher average fitness. After evolution proceeds for some time, the fitness should become stable: the fitness of the population is approximately (possibly local) optimum and receive little or no benefit from additional iterations. The individual with highest fitness is chosen as the problem solution. The mechanisms behind GA are the selection, mutation, and crossover operations. Selection is process of choosing which individual's solutions are to be used for constructing the next generation. Individuals are ranked by their fitness and the probability of selection is proportional to the individual's fitness. New individuals are formed from those selected using crossover and mutation. The crossover operation combines elements of solutions (called genes) in combination, with the hope that elements from two fit solutions can be combined to yield an even better solution. While not all of these combinations will have better fitness, the selection process will favor the better results: guiding the population in increasingly fitter solutions on average. Mutation is the operation of randomly adding, deleting, and transforming genes. Many mutations will be harmful, but again, selection will promote the survival of those that improve the population. The result of GA is sensitive to the rate of mutation and crossover. An overemphasis on crossover may lead to premature convergence to an optimal solution, since the space is insufficiently explores. But an overemphasis of mutation may not take advantage of fit solutions and delay convergence. The parameters (PyGMO defaults) are as follows. \textit{Selection} is set to \textit{tournament}, \textit{crossover strategy} to \textit{exponential}, \textit{crossover probability} to \textit{0.9}, \textit{mutation strategy} to \textit{polynomial}, \textit{mutation probability} to \textit{0.02}. 
 
-% --------------------  Genetic Algorithm --------------      
-\begin{algorithm}%
-\KwIn{population size $P$, \\
-~~~~~~number of iterations $N$, \\
-~~~~~~mutation rate $M$, \\
-~~~~~~crossover rate $C$, \\
-}
-\KwOut{Solution $X$}
-\textbf{begin GA}\\
-~~~Randomly initialize a population of $P$ individuals\\
-~~~Set iteration counter $c$ = 0 \\
-~~~\textbf{While} (While $c$ is less than $I$) do\\
-~~~~~~~~~~~\textbf{For} i = 1 to number of individuals \\
- ~~~~~~~~~~~~~Evaluate the fitness:= $ f(x_i)$\\
- ~~~~~~~~~~~~~Select individuals with probability proportional to their fitness \\
- ~~~~~~~~~~~~~Apply crossover to selected individuals with probability $C$\\
- ~~~~~~~~~~~~~Apply mutation to selected individuals with probability $M$ \\
- ~~~~~~~~~~~~~Set the current solution $X$ as the fittest individual \\
- ~~~~~~~~~~~~~Set the population as the resulting generation from application of the genetic operations\\
-~~~\textbf{End while} \\
-\textbf{end GA}\\
-\caption[Basic steps of genetic algorithm.]{Basic steps of genetic algorithm.}
-\label{GA}
-\end{algorithm}
-% ----------------- End Genetic Algorithm --------------
+% % --------------------  Genetic Algorithm --------------      
+% \begin{algorithm}[H]
+% \KwIn{population size $P$, \\
+% ~~~~~~number of iterations $N$, \\
+% ~~~~~~mutation rate $M$, \\
+% ~~~~~~crossover rate $C$, \\
+% }
+% \KwOut{Solution $X$}
+% \textbf{begin GA}\\
+% ~~~Randomly initialize a population of $P$ individuals\\
+% ~~~Set iteration counter $c$ = 0 \\
+% ~~~\textbf{While} (While $c$ is less than $I$) do\\
+% ~~~~~~~~~~~\textbf{For} i = 1 to number of individuals \\
+%  ~~~~~~~~~~~~~Evaluate the fitness:= $ f(x_i)$\\
+%  ~~~~~~~~~~~~~Select individuals with probability proportional to their fitness \\
+%  ~~~~~~~~~~~~~Apply crossover to selected individuals with probability $C$\\
+%  ~~~~~~~~~~~~~Apply mutation to selected individuals with probability $M$ \\
+%  ~~~~~~~~~~~~~Set the current solution $X$ as the fittest individual \\
+%  ~~~~~~~~~~~~~Set the population as the resulting generation from application of the genetic operations\\
+% ~~~\textbf{End while} \\
+% \textbf{end GA}\\
+% \caption[Basic steps of genetic algorithm.]{Basic steps of genetic algorithm.}
+% \label{GA}
+% \end{algorithm}
+% % ----------------- End Genetic Algorithm --------------
 
 \subsubsection{Particle Swarm Optimization}
 
-PSO differs conceptually from GA in that it deals with activity within a single, static population, rather than its evolution \cite{pso:nie:2016}. The algorithm models a group of social particle, each a solution, that share information to locate resources. They search for resources within the problem's search space, using a fitness function to determine which points offer better resources. Particle are characterized by their positions (solutions), its personal best solution, and its velocity. Each also has access to the global best solution. At every iteration, particle move in the search space with a velocity influenced by the global and local information. An overview of PSO is shown in Algorithm \ref{PSO}.
+PSO differs conceptually from GA in that it deals with activity within a single, static population, rather than its evolution \cite{pso:nie:2016}. The algorithm models a group of social particle, each a solution, that share information to locate resources. They search for resources within the problem's search space, using a fitness function to determine which points offer better resources. Particle are characterized by their positions (solutions), its personal best solution, and its velocity. Each also has access to it's neighborhood's best solution where the neighborhood is the 4 solutions stored adjacent in the population array. At every iteration, particle move in the search space with a velocity influenced by the global and local information. The parameters (PyGMO defaults) are as follows. \textit{Inertia weight} is set to \textit{0.7298}, \textit{social weight} to \textit{2.05}, \textit{cognitive weight} to \textit{2.05}, \textit{maximum velocity} to \textit{0.5}, \textit{neighborhood} (swarm topology) to \textit{immediate solutions in population array}, and \textit{neighborhood size} (topology parameter) to \textit{4}. 
 
-% -------------------- PSO algorithm --------------      
-\begin{algorithm}%
-\KwIn{population size $P$, \\
-~~~~~~number of iterations $N$, \\
-}
-\KwOut{Solution $X$}
-\textbf{Begin PSO}\\
-~~~Randomly initialize the position and velocity of the $P$ particles: $X_i(0) and V_i(0)$\\
-~~~Set iteration counter $c$ = 0 \\
-~~~\textbf{While} (While $c$ is less than $I$) do\\
-~~~~~~~\textbf{For} $i$ = 1 to number of particles \\
- ~~~~~~~~~~Evaluate the fitness:= $ f(x_i)$\\
- ~~~~~~~~~~Update local and global best solutions \\ 
- ~~~~~~~~~~Update velocity of the particle $v_i$\\
- ~~~~~~~~~~Update position of the particle $x_i$\\
- ~~~~~~~~~~Compute fitness of new population\\
-~~~\textbf{End while} \\
-~~~Set the solution $X$ using the fittest individual \\
-\textbf{end PSO}\\
-\caption[Basic steps of particle swarm optimization.]{Basic steps of particle swarm optimization.} 
-\label{PSO}
-\end{algorithm}
-%----------------- End PSO algorithm ---------------
+% % -------------------- PSO algorithm --------------      
+% \begin{algorithm}[H]
+% \KwIn{population size $P$, \\
+% ~~~~~~number of iterations $N$, \\
+% }
+% \KwOut{Solution $X$}
+% \textbf{Begin PSO}\\
+% ~~~Randomly initialize the position and velocity of the $P$ particles: $X_i(0) and V_i(0)$\\
+% ~~~Set iteration counter $c$ = 0 \\
+% ~~~\textbf{While} (While $c$ is less than $I$) do\\
+% ~~~~~~~\textbf{For} $i$ = 1 to number of particles \\
+%  ~~~~~~~~~~Evaluate the fitness:= $ f(x_i)$\\
+%  ~~~~~~~~~~Update local and global best solutions \\ 
+%  ~~~~~~~~~~Update velocity of the particle $v_i$\\
+%  ~~~~~~~~~~Update position of the particle $x_i$\\
+%  ~~~~~~~~~~Compute fitness of new population\\
+% ~~~\textbf{End while} \\
+% ~~~Set the solution $X$ using the fittest individual \\
+% \textbf{end PSO}\\
+% \caption[Basic steps of particle swarm optimization.]{Basic steps of particle swarm optimization.} 
+% \label{PSO}
+% \end{algorithm}
+% %----------------- End PSO algorithm ---------------
 
 \subsubsection{Differential Evolution }
 
-DE is similar in concept to GA, but the mechanics of population improvement differ \cite{de:zhang:2013}. Rather than using separate mutation and crossover operations, a single manipulation function exists that incorporates aspects of both. The function takes three individuals in the population and computes a new value as a combination of the three inputs. The critical piece of the function is a difference between solution elements so that the change is more strongly influenced by further apart individuals. Since this function creates new solution elements, but based on elements found in the existing population, it can be thought of as a crossover-driven mutation operation. The behavior is controlled with a crossover rate $C$ that affects how often the operation is applied and a differential weight $F$ which affects how strongly the vector differences can influence a candidate. The concerns regarding premature or delayed convergence in GA remain. The DE algorithm is shown in Algorithm \ref{DE}.
+DE is similar in concept to GA, but the mechanics of population improvement differ \cite{de:zhang:2013}. Rather than using separate mutation and crossover operations, a single manipulation function exists that incorporates aspects of both. The function takes three individuals in the population and computes a new value as a combination of the three inputs. The critical piece of the function is a difference between solution elements so that the change is more strongly influenced by further apart individuals. Since this function creates new solution elements, but based on elements found in the existing population, it can be thought of as a crossover-driven mutation operation. The behavior is controlled with a crossover rate $C$ that affects how often the operation is applied and a differential weight $F$ which affects how strongly the vector differences can influence a candidate. The concerns regarding premature or delayed convergence in GA remain. The parameters (PyGMO defaults) are as follows. The \textit{weight coefficient} is set to \textit{0.8}, the \textit{crossover probability} to \textit{0.9}, and \textit{mutation algorithm} set to \textit{rand/1/bin} (\cite{de:neri:2010}). 
 
-% -------------------- DE algorithm -------------- 
-\begin{algorithm}%
-\KwIn{population size $P$, \\
-~~~~~~number of iterations $N$, \\
-~~~~~~crossover rate $C$ \\
-~~~~~~differential weight $F$ \\
-}
-\KwOut{Solution $X$}
-\textbf{Begin DE}\\
-~~~Randomly initialize the position of the $P$ agents\\
-~~~Set iteration counter $c$ = 0 \\
-~~~\textbf{While} (While $c$ is less than $I$) do\\
-~~~~~\textbf{For} each agent $x$ \\
-~~~~~~~Randomly select 3 distinct agents, $a$, $b$, $c$ that are not $x$ \\
-~~~~~~~Randomly select a solution element (vector index $i$) \\
-~~~~~~~Initialize a new vector $y$ of the length of the solution dimension. Each element is $0$. \\
-~~~~~~~\textbf{For} $i$ = 0 to length of solution \\
-~~~~~~~~~Randomly select $r_i$ from uniform distribution in range $[0, 1]$ \\
-~~~~~~~~~\textbf{If} $r_i$ < $C$ \\
-~~~~~~~~~~~Set $y_i$ = $a_i + F * (b_i - c_i)$ \\
-~~~~~~~~~\textbf{Else} \\
-~~~~~~~~~~~$y_i$ = $x_i$ \\
-~~~~~~~~~\textbf{If} candidate solution $y$ has greater fitness than $x$ \\
-~~~~~~~~~~~Replace agent $x$ with improved agent $y$ \\
-~~~\textbf{End while} \\
-~~~ Set $X$ as solution with greatest fitness \\
-\textbf{end DE}\\
-\caption[Basic steps of differential evolution.]{Basic steps of differential evolution.}
-\label{DE}
-\end{algorithm}
-% ----------------- End DE algorithm -------------- 
+% % -------------------- DE algorithm -------------- 
+% \begin{algorithm}[H]
+% \KwIn{population size $P$, \\
+% ~~~~~~number of iterations $N$, \\
+% ~~~~~~crossover rate $C$ \\
+% ~~~~~~differential weight $F$ \\
+% }
+% \KwOut{Solution $X$}
+% \textbf{Begin DE}\\
+% ~~~Randomly initialize the position of the $P$ agents\\
+% ~~~Set iteration counter $c$ = 0 \\
+% ~~~\textbf{While} (While $c$ is less than $I$) do\\
+% ~~~~~\textbf{For} each agent $x$ \\
+% ~~~~~~~Randomly select 3 distinct agents, $a$, $b$, $c$ that are not $x$ \\
+% ~~~~~~~Randomly select a solution element (vector index $i$) \\
+% ~~~~~~~Initialize a new vector $y$ of the length of the solution dimension. Each element is $0$. \\
+% ~~~~~~~\textbf{For} $i$ = 0 to length of solution \\
+% ~~~~~~~~~Randomly select $r_i$ from uniform distribution in range $[0, 1]$ \\
+% ~~~~~~~~~\textbf{If} $r_i$ < $C$ \\
+% ~~~~~~~~~~~Set $y_i$ = $a_i + F * (b_i - c_i)$ \\
+% ~~~~~~~~~\textbf{Else} \\
+% ~~~~~~~~~~~$y_i$ = $x_i$ \\
+% ~~~~~~~~~\textbf{If} candidate solution $y$ has greater fitness than $x$ \\
+% ~~~~~~~~~~~Replace agent $x$ with improved agent $y$ \\
+% ~~~\textbf{End while} \\
+% ~~~ Set $X$ as solution with greatest fitness \\
+% \textbf{end DE}\\
+% \caption[Basic steps of differential evolution.]{Basic steps of differential evolution.}
+% \label{DE}
+% \end{algorithm}
+% % ----------------- End DE algorithm -------------- 
 
 \subsubsection{Artificial Bee Colony}
 
-ABC is similar to PSO in that the individuals in the population search for the solution by performing actions \cite{bee_ga:carballo:2017}. The bees are searching for food (solutions) with a high quantity of nectar (fitness). Like bees in nature, the individuals fulfill different role and may go between roles depending on the situation. The roles are employed, onlookers, and scouts. The population is food sources which represent solutions. The number of employed bees is equal to the number of solutions such that every employed bee is associated with a single solution. Initially, food sources are randomly generated in the search space. At each iteration, there are distinct phases for the activity of employed, onlooker and scout bees. Employed bees search the neighborhood of their food source to check for better food nearby sources. The bee checks an adjacent location and updates the food source if the fitness is higher than the current source. Note that the bee is, in a single iteration, only checking one solution in the neighborhood: a greedy search. So, an employed bee either maintains or replaces the food source at each iteration. After this, the onlooker bees select sources from those offered by the employed. This selection is done with the consideration of each solution's fitness. The fitness is used to weight the probability of choosing that source. The onlooker, like the employed bee, looks at nearby solutions in search of fitter sources. If the location checks has higher fitness, the onlooker records the solution and its fitness. The scouts randomly find new solutions to replace existing solutions. Solutions are abandoned when a set number of iterations goes by without finding a higher reward that the current solution. The employed bee that abandons its source temporarily becomes a scout in order to find new sources. The onlookers contribute to convergence by searching around known solutions, while the scouts promote exploration by randomly checking new solutions. 
+ABC is similar to PSO in that the individuals in the population search for the solution by performing actions \cite{bee_ga:carballo:2017}. The bees are searching for food (solutions) with a high quantity of nectar (fitness). Like bees in nature, the individuals fulfill different role and may go between roles depending on the situation. The roles are employed, onlookers, and scouts. The population is food sources which represent solutions. The number of employed bees is equal to the number of solutions such that every employed bee is associated with a single solution. Initially, food sources are randomly generated in the search space. At each iteration, there are distinct phases for the activity of employed, onlooker and scout bees. Employed bees search the neighborhood of their food source to check for better food nearby sources. The bee checks an adjacent location and updates the food source if the fitness is higher than the current source. Note that the bee is, in a single iteration, only checking one solution in the neighborhood: a greedy search. So, an employed bee either maintains or replaces the food source at each iteration. After this, the onlooker bees select sources from those offered by the employed. This selection is done with the consideration of each solution's fitness. The fitness is used to weight the probability of choosing that source. The onlooker, like the employed bee, looks at nearby solutions in search of fitter sources. If the location checks has higher fitness, the onlooker records the solution and its fitness. The scouts randomly find new solutions to replace existing solutions. Solutions are abandoned when a set number of iterations goes by without finding a higher reward that the current solution. The employed bee that abandons its source temporarily becomes a scout in order to find new sources. The onlookers contribute to convergence by searching around known solutions, while the scouts promote exploration by randomly checking new solutions.  The parameters (PyGMO defaults) are as follows. The \textit{limit}, which is the number of iterations before an employed bee abandons a food source when unable to increase fitness, is set to \textit{1}. 
 
-% -------------------- BEE algorithm -------------- 
-\begin{algorithm}%
-\KwIn{population size $P$, \\
-~~~~~~number of iterations $N$, \\
-~~~~~~limit $L$ \\
-}
-\KwOut{Solution $X$}
-\textbf{Begin BEE}\\
-~~~Randomly initialize position of the employed bees \\
-~~~\textbf{For} $e$ in employed bees \\
-~~~~~~~\textbf{For} $n$ in solution neighborhood \\
-~~~~~~~~~Calculate fitness of solution $n$ \\
-~~~~~~~~~\textbf{If} fitness of $n$ > fitness of current solution \\
-~~~~~~~~~~~~~Set solution to $n$ \\
-~~~~~~~\textbf{If} bee has been unable to improve fitness for $L$ iterations \\
-~~~~~~~~~~~Switch to scout bee \\
-~~~~~~~Use selection scheme to select an employed bee's solution \\
-~~~~~~~\textbf{For} $n$ in solution neighborhood \\
-~~~~~~~~~Calculate fitness of solution $n$ \\
-~~~~~~~~~\textbf{If} fitness of $n$ > fitness of current solution \\
-~~~~~~~~~~~~~Set solution to $n$ \\
-~~~\textbf{For} $s$ in scout bees \\
-~~~~~~~Randomly choose a now solution \\
-~~~~~~~Switch to employed bee \\
-~~~Record best solution found by all bees so far as $X$ \\
-\textbf{end BEE}\\
-\caption[Basic steps of artificial bee colony.]{Basic steps of artificial bee colony.} 
-\label{BEE}
-\end{algorithm}
-% ----------------- End BEE algorithm -------------- 
+% % -------------------- BEE algorithm -------------- 
+% \begin{algorithm}[H]
+% \KwIn{population size $P$, \\
+% ~~~~~~number of iterations $N$, \\
+% ~~~~~~limit $L$ \\
+% }
+% \KwOut{Solution $X$}
+% \textbf{Begin BEE}\\
+% ~~~Randomly initialize position of the employed bees \\
+% ~~~\textbf{For} $e$ in employed bees \\
+% ~~~~~~~\textbf{For} $n$ in solution neighborhood \\
+% ~~~~~~~~~Calculate fitness of solution $n$ \\
+% ~~~~~~~~~\textbf{If} fitness of $n$ > fitness of current solution \\
+% ~~~~~~~~~~~~~Set solution to $n$ \\
+% ~~~~~~~\textbf{If} bee has been unable to improve fitness for $L$ iterations \\
+% ~~~~~~~~~~~Switch to scout bee \\
+% ~~~~~~~Use selection scheme to select an employed bee's solution \\
+% ~~~~~~~\textbf{For} $n$ in solution neighborhood \\
+% ~~~~~~~~~Calculate fitness of solution $n$ \\
+% ~~~~~~~~~\textbf{If} fitness of $n$ > fitness of current solution \\
+% ~~~~~~~~~~~~~Set solution to $n$ \\
+% ~~~\textbf{For} $s$ in scout bees \\
+% ~~~~~~~Randomly choose a now solution \\
+% ~~~~~~~Switch to employed bee \\
+% ~~~Record best solution found by all bees so far as $X$ \\
+% \textbf{end BEE}\\
+% \caption[Basic steps of artificial bee colony.]{Basic steps of artificial bee colony.} 
+% \label{BEE}
+% \end{algorithm}
+% % ----------------- End BEE algorithm -------------- 
 
 \subsubsection{Fitness Function}
 \label{section:fitness_function}
@@ -352,7 +359,7 @@ path = [ (x_{1}, y_{1}), (x_{2}, y_{2}), ..., (x_{n}, y_{n}) ]
 \label{solution_path}
 \end{equation}
 
-The fitness function evaluates the quality of a candidate solution; each metaheuristic algorithm employs some scheme to optimize the fitness value. In this system, the Surveyor intends to minimize collisions, distance, duration, and work. Duration is not calculated in the fitness function since it related to the distance and work. This is complicated by that the Surveyor also intends to sacrifice some optimality to maximize path reward. Weights are used to influence the importance of each criteria. High weight on reward should cause the Surveyor to be less concerned with path efficiency, while a very small (or 0) reward weight focuses only highly efficient planning. The path distance, $Path_D$, is the sum of euclidean distances between each pair of waypoints (equation \ref{eq_path_distance}). The path obstacles, $Path_O$, is the count of all collisions between each pair of waypoints (equation \ref{eq_path_obstacles}). The work exerted by the vehicle, $Path_W$, is the sum of work done along the path segments as it deals with water currents to maintain a constant speed (equation \ref{eq_path_work}). Finally, the reward collected by visiting cells along the path, $Path_R$, is the sum of reward values in $G_reward$ (equation \ref{eq_path_reward}). The fitness for the entire path is the weighted sum of these values, using weights $W_{distance}$, $W_{obstacles}$, $W_{work}$, and $W_{reward}$ (see Equation \ref{fitness_function}. The weight $W_{obstacles}$ is always set to an arbitrary large number, since there are no situations where the Surveyor allows collision. 
+The fitness function evaluates the quality of a candidate solution; each metaheuristic algorithm employs some scheme to optimize the fitness value. In this system, the \textit{Surveyor} intends to minimize collisions, distance, duration, and work. Duration is not calculated in the fitness function since it related to the distance and work. This is complicated by that the \textit{Surveyor} also intends to sacrifice some optimality to maximize path reward. Weights are used to influence the importance of each criteria. High weight on reward should cause the \textit{Surveyor} to be less concerned with path efficiency, while a very small (or 0) reward weight focuses only highly efficient planning. The path distance, $Path_D$, (equation \ref{eq_path_distance}) is the sum of euclidean distances between each pair of adjacent waypoints, $(x_{i}, y_{i})$ and $(x_{i+1}, y_{i+1})$. The path obstacles, $Path_O$, is the count of all collisions between each pair of waypoints (equation \ref{eq_path_obstacles}). The work exerted by the vehicle, $Path_W$, is the sum of work done along the path segments as it deals with water currents to maintain a constant speed (equation \ref{eq_path_work}). Note that equation \ref{eq_work_prime} is a call to Algorithm \ref{alg:getworkatcell}. Finally, the reward collected by visiting cells along the path, $Path_R$, is the sum of reward values in $G_{reward}$ (equation \ref{eq_path_reward}). The calculations of $Path_O$, $Path_W$, and $Path_reward$ require checking all cells in a line between the two adjacent paypoints. The Bresenham line algorithm \ref{bresenham:1965} gives the set of all grid cells between any two grid points. The fitness for the entire path is the weighted sum of these values, using weights $W_{distance}$, $W_{obstacles}$, $W_{work}$, and $W_{reward}$ (see Equation \ref{fitness_function}). The weight $W_{obstacles}$ is always set to an arbitrary large number, since there are no situations where the \textit{Surveyor} allows collision. 
 
 % --- Distance Eqs ---
 \begin{equation}
@@ -361,7 +368,7 @@ The fitness function evaluates the quality of a candidate solution; each metaheu
 \end{equation}
 
 \begin{equation}
-Path_{D} = \sum_{i=1}^{n-1} \Delta (<x_{i}, y_{i}>, <x_{i+1}, y_{i+1}>)
+Path_{D} = \sum_{i=1}^{n-1} \Delta (x_{i}, y_{i}, x_{i+1}, y_{i+1}) \forall (x_{i}, y_{i}) \in (x_{1}, y_{1}), (x_{2}, y_{2}), ..., (x_{n-1}, y_{n-1})
 \label{eq_path_distance}
 \end{equation}
 % - End  Distance Eqs --
@@ -369,41 +376,41 @@ Path_{D} = \sum_{i=1}^{n-1} \Delta (<x_{i}, y_{i}>, <x_{i+1}, y_{i+1}>)
 
 % ---- Obstacle Eqs ----
 \begin{equation}
-o = \sum G_{region}(x_l, y_l) \forall x_l, y_l \in Bresenham(x_i, y_i, x_j, y_j)
+o = \sum G_{region}(x_l, y_l) \forall x_l, y_l \in Bresenham(x_i, y_i, x_j, y_j) 
 \label{eq_obstacles}
 \end{equation}
 
 \begin{equation}
-Path_{O} = \sum_{i=1}^{n-1} o (x_{i}, y_{i}, x_{i+1}, y_{i+1})
+Path_{O} = \sum_{i=1}^{n-1} o (x_{i}, y_{i}, x_{i+1}, y_{i+1}) \forall (x_{i}, y_{i}) \in (x_{1}, y_{1}), (x_{2}, y_{2}), ..., (x_{n-1}, y_{n-1})
 \label{eq_path_obstacles}
 \end{equation}
 % - End Obstacle Eqs ---
 
 % ---- Work Eqs -----
 \begin{equation}
-\omega^{'} = GetWorkAtCell(x_l, y_l) \ref{alg:getworkatcell}
+\omega^{'} = GetWorkAtCell(x_l, y_l), 
 \label{eq_work_prime}
 \end{equation}
 
 \begin{equation}
-\omega = \sum \omega^{'}(x_l, y_l) \forall x_l, y_l \in Bresenham(x_i, y_i, x_j, y_j)
+\omega = \sum \omega^{'}(x_l, y_l) \forall x_l, y_l \in Bresenham(x_i, y_i, x_j, y_j) 
 \label{eq_work}
 \end{equation}
 
 \begin{equation}
-Path_{W} = \sum_{i=1}^{n-1} \omega (x_{i}, y_{i}, x_{i+1}, y_{i+1})
+Path_{W} = \sum_{i=1}^{n-1} \omega (x_{i}, y_{i}, x_{i+1}, y_{i+1}) \forall (x_{i}, y_{i}) \in (x_{1}, y_{1}), (x_{2}, y_{2}), ..., (x_{n-1}, y_{n-1})
 \label{eq_path_work}
 \end{equation}
 % - End work eqs ----
 
 % ---- Reward Eqs -----
 \begin{equation}
-\gamma = \sum G_{reward} \forall x_l, y_l \in Bresenham(x_i, y_i, x_j, y_j)
+\gamma = \sum G_{reward}[(x_l, y_l)] \forall x_l, y_l \in Bresenham(x_i, y_i, x_j, y_j)
 \label{eq_reward}
 \end{equation}
 
 \begin{equation}
-Path_{R} = \sum_{i=1}^{n-1} \gamma (x_{i}, y_{i}, x_{i+1}, y_{i+1})
+Path_{R} = \sum_{i=1}^{n-1} \gamma (x_{i}, y_{i}, x_{i+1}, y_{i+1}) \forall (x_{i}, y_{i}) \in (x_{1}, y_{1}), (x_{2}, y_{2}), ..., (x_{n-1}, y_{n-1})
 \label{eq_path_reward}
 \end{equation}
 % - End reward eqs ----
@@ -421,55 +428,55 @@ Fitness_{path} ={} & \{W_{obstacles} \times Path_{O} + \\
 \end{equation}
 
 
-
+\begin{spacing}{0.5}
 % ------------- Get work at cell -------------- 
-\begin{algorithm}%
-\KwIn{Location row coordinate $R_y$, \\
-~~~~~~Location column coordinate $R_x$, \\
-~~~~~~Waypoint row coordinate $W_y$, \\
-~~~~~~Waypoint column coordinate $W_x$, \\
-~~~~~~Target speed $s$, \\
-~~~~~~Cellsize $c$, \\
-~~~~~~Time offset $d$
-}
-\KwOut{Work estimate $w$}
-\textbf{Begin GetWorkAtCell}\\
-~~~Use $d$ to set water current grids to appropriate time interval
-~~~Calculate the heading $h$ required to move from current position to direction of next waypoint \\
-~~~Set robot's velocity magnitude as constant speed $s$ \\
-~~~Set robot's velocity direction as heading $h$ \\
-~~~Convert the robot's and water current's velocity to $x$, $y$ vector components \\
-~~~Calculate differences $\delta x$ and $\delta y$ between robot and current vector components \\
-~~~Calculate differences in magnitude and direction, $\delta m$ and $\delta d$ using $\delta x$, $\delta y$ \\
-~~~Calculate relative work $w = \delta m \times c$ \\
-\textbf{end GetWorkAtCell} \\
-\caption[Calculate work to traverse a cell.]{Calculate the work done by the robot to traverse a cell in the direction toward the next waypoint.} 
+\begin{algorithm}[H]
+\caption[GetWorkAtCell]{\textbf{GetWorkAtCell:} Calculate the work done to traverse a cell} 
 \label{alg:getworkatcell}
+\SetAlgoVlined
+\KwIn{Location coordinates $<R_x, R_y>$, waypoint coordinates $<W_x, W_y>$, desired robot speed $s$, cell size $c$, time offset $d$, grid of environment force magnitudes $Grid_{magnitude}$, and grid of environment force directions $Grid_{direction}$. }
+\KwOut{Work estimate $w$}
+\If{$d == 0$}{
+    $idx = 1$}
+\Else{$idx = ceil(d / bandinterval$)}
+$\theta_h = angle(<0, 1>, <W_y, W_x>)$\;
+$V^r_x = s \times \cos{\theta_h}$\;
+$V^r_y = s \times \sin{\theta_h}$\;
+$V^e_x = Grid_{magnitude}(idx, R_y, R_x) \times \cos{Grid_{direction}(idx, R_y, R_x)}$\;
+$V^e_y = Grid_{magnitude}(idx, R_y, R_x) \times \sin{Grid_{direction}(idx, R_y, R_x)}$\;
+$V_{\delta x} = V^r_x - V^e_x$\;
+$V_{\delta y} = V^r_y - V^e_y$\;
+$\theta_{\delta} = angle(<V_{\delta y}, V_{\delta x}>, <0, 1>)$\;
+$s_{\delta} = \sqrt{(x_{i} - x_{j})^2 + (y_{i} - y_{j})^2}$\;
+$w = s_{\delta} \times c$\;
+\Return {w}
 \end{algorithm}
 % --------------- Get work at cell -------------- 
-
+\end{spacing}
 
 
 \subsection{Coverage Path Planner}
 
 \textit{Coverage} path planning is used to find a path that reaches all (or a specified minimum proportion) of cells over a target region. The mechanism of path generation differs greatly from \textit{Goto} planning because of the need to maximize cell coverage. It is a complex problem since the path should visit each cell while still minimizing distance. Every cell added increases the distance, so distance minimization means that the no other path through all cells will be shorter distance. In this system, work and distance are both of concern. Like \textit{Goto} planning, algorithms may be exhaustive, heuristic, or meta-heuristic. 
 
-Because of the large dimension of candidate solutions (from a waypoint-based planning perspective (Equation \ref{solution_path}), efforts to apply metaheuristic algorithms have applied various techniques for search space reduction. These techniques typically make assumptions on the environment are not useful for highly-complex situations. This Surveyor is dealing with complex geographic shapes. For this domain, it is better to have less-optimal planners that place few restrictions on the environment. 
+Because of the large dimension of candidate solutions (from a waypoint-based planning perspective (Equation \ref{solution_path}), efforts to apply metaheuristic algorithms have applied various techniques for search space reduction. These techniques typically make assumptions on the environment are not useful for highly-complex situations. This \textit{Surveyor} is dealing with complex geographic shapes. For this domain, it is better to have less-optimal planners that place few restrictions on the environment. 
 
 The implementation of \textit{Coverage} planning within this system is still in its infancy. Some form was needed to be able to use the mission planner, since each target corresponds to a \textit{Coverage} task. Currently, a simple lawnmower path algorithm is employed for terrain-free regions. Without the need to work around obstacles, planning is trivial. The dynamics of USVs are not suited to the sharp turn inherent in lawnmower paths, which traverse the regions grid in either row-wise or column-wise movements \cite{liu:2016}. Still, the generic nature of lawnmower paths makes them usable by any standard vehicle, and they remain common for USV survey tasks despite their inefficiency. The lawnmower coverage planner implemented computes both row-wise and column-wise paths. The directions of the currents can greatly impact the relative performance of the two schemes, so both are evaluated and the more efficient is selected. 
 
-If a target region has terrain, a metaheurstic planner is invoked. This planner is still under construction and is highly inefficient in its current state. Such regions are not featured in this text. Because the Analyst selects large and reward-rich terrain-free regions where possible, it was not necessary to manual intervene for the system to naturally select terrain-free targets. In theory, exceptionally rare events or desirable entity presence would lead the Analyst to select regions with terrain despite their smaller size.
+If a target region has terrain, a metaheurstic planner is invoked. This planner is still under construction and is highly inefficient in its current state. Such regions are not featured in this text. Because the \textit{\textit{Analyst}} selects large and reward-rich terrain-free regions where possible, it was not necessary to manual intervene for the system to naturally select terrain-free targets. In theory, exceptionally rare events or desirable entity presence would lead the \textit{\textit{Analyst}} to select regions with terrain despite their smaller size.
 
 
 \subsection{Mission Planning}
 
-A mission planner is a program that takes as input a start location and a number of targets and allowed stop locations. The start and stop locations are simply latitude and longitude coordinate points, but the targets have both coordinate and extent. The coordinate is the center of the region and the extent specifies the area of the region around that point. Collectively, the start, stop, and target locations are called nodes. At the highest level, a solution mission is a sequence of nodes that represents a sequence of mission segments. The mission planners used in this research generate a sequence of \textit{Goto} and \textit{Coverage} path planner segments. The goal of the mission planner is visit as many targets as is feasible and end at one of the allowed stop locations.  The mission planner chooses an optimal order in which to visit the targets. Consider a solution mission $( 0, 2, 1, 3 )$. This represents a \textit{Goto} path from the start location at node 0 to a target region's entry location at node 2. The entry location is a point on the boundary of a target region that is selected as the point to start from when arriving from a specific previous node. In other words, there may be a different entry point into the region of node 2 if the previous node were 1 rather than 0. At node 2, the \textit{Coverage} path is performed by visiting cells in the region and ending at the region's exit location. Similarly to the entry location, the exit location is defined with respect to the next node in the sequence. This is illustrated in Figure \ref{segment_example}. After completing the \textit{Coverage} task, another \textit{Goto} task is followed to reach the entry location for node 1. Again, a \textit{Coverage} task is done followed by a \textit{Goto} to reach the stop at node 3. The output of the mission planner should be a feasible path, which is one whose total duration and work do not exceed the maximum constraints. For example, the robot may have both limited power and a directive to end within 5 hours. The mission planner produces only estimates of feasible paths, but will be considered feasible for the purpose of this analysis. 
+A mission planner is a program that takes as input a start location and a number of targets and allowed stop locations. The start and stop locations are simply latitude and longitude coordinate points, but the targets have both coordinate and extent. The coordinate is the center of the region and the extent specifies the area of the region around that point. Collectively, the start, stop, and target locations are called nodes. At the highest level, a solution mission is a sequence of nodes that represents a sequence of mission segments. The mission planners used in this research generate a sequence of \textit{Goto} and \textit{Coverage} path planner segments. An example mission, with \textit{Goto} and \textit{Coverage} paths evaluated, is shown is Figure \ref{fig:missionplanning}. 
 
-\begin{figure}[h]
-\includegraphics[]{segment_example.png}
-\caption[Entry and exit points of coverage region.]{An example mission planning segment. The entry and exit locations for a node's region are dependent on the previous and next nodes in sequence.}
+\begin{figure}[H]
+\includegraphics[]{nummissions.png}
+\caption[Example mission.]{Example mission. With 4 targets, there are 4 \textit{Coverage} paths and 5 \textit{Goto} paths.}
 \label{segment_example}
 \end{figure}
+
+The goal of the mission planner is visit as many targets as is feasible and end at one of the allowed stop locations.  The mission planner chooses an optimal order in which to visit the targets. Consider a solution mission $( 0, 2, 1, 3 )$. This represents a \textit{Goto} path from the start location at node 0 to a target region's entry location at node 2. The entry location is a point on the boundary of a target region that is selected as the point to start from when arriving from a specific previous node. In other words, there may be a different entry point into the region of node 2 if the previous node were 1 rather than 0. At node 2, the \textit{Coverage} path is performed by visiting cells in the region and ending at the region's exit location. Similarly to the entry location, the exit location is defined with respect to the next node in the sequence. This is illustrated in Figure \ref{segment_example}. After completing the \textit{Coverage} task, another \textit{Goto} task is followed to reach the entry location for node 1. Again, a \textit{Coverage} task is done followed by a \textit{Goto} to reach the stop at node 3. The output of the mission planner should be a feasible path, which is one whose total duration and work do not exceed the maximum constraints. For example, the robot may have both limited power and a directive to end within 5 hours. The mission planner produces only estimates of feasible paths, but will be considered feasible for the purpose of this analysis. 
 
 Two mission planner programs have been developed and their results will be compared in this text. These are called Mission Planner Fully Connected (MPFC) and Mission Planner Try \& Repair (MPTR), and they largely differ in the number of path planner modules invoked. Ultimately, mission planning reduces to a form of the travelling salesman problem which is NP-hard. Various techniques have been developed to deal with NP-hard problems by reducing the search space with heuristics or meta-heuristic approaches. An example is A* which uses the distance between nodes as a heuristic in deciding which nodes to explore. Meta-heuristic algorithms, such as those used by planning modules in this system, have been demonstrated to achieve very high computational performance in reaching (non-deterministic) approximately optimal solutions. Because this system uses different types of search algorithms in different modules, a distinction needs to be clarified to avoid confusion. Both mission planners invoke path planners for finding specific paths for each mission segment. Only the selection of targets and the order of these segments is handled by the mission planner itself. MPFC is an exhaustive search of all possible paths. The estimated distance, duration, work, and reward is totalled for each possibility and used to select the best feasible mission. This called optimal with respect to all other missions, but cannot be called absolutely optimal with regards to the path since the segments are computed using approximately optimal path planners. Optimal here is intended to convey an ideal mission planning result given the mission planning setup in place. The goal is show that a mission planning scheme can be developed which approximates the result of MPFC, but with less complexity. MPTR ignores two path planning elements that forces sequence planning of segments. The two elements are (1) after each segment, the elapsed duration is input to the next segment so that the current forecast is updated accordingly and (2) the order of nodes determines the entry into and exit from \textit{Coverage} regions. The final mission requires that the both elements are taken into account. However, the question is whether or not a reasonable sequence of nodes could be determined without those elements. In other words, could a mission planner ignore the elements to determine that an effective sequence is nodes $(1 3 4 2 5 6$ and then plan that sequence fully with the elements applied appropriately. If so, MPTR would reduce the mission planning to hours instead of days, in its current form. With further optimization of the fitness function and parallel execution of planner invocations, this is likely to become minutes instead of hours. Both MPFC and MPRT will now be discussed in full.
 
@@ -498,7 +505,7 @@ Water currents direction & Grid of predicted directions, 1 band per interval & G
 \hline
 Entities map & An image where entities are represented by colors. & PNG image & Figure \ref{fig:env_entities} \\
 \hline
-Entity analysis  & Cell is the Analyst's information on that cell. Bands for entity density, speed, and acceleration scores. & Geotiff raster  & Source code  \\ 
+Entity analysis  & Cell is the \textit{\textit{Analyst}}'s information on that cell. Bands for entity density, speed, and acceleration scores. & Geotiff raster  & Source code  \\ 
 \hline
 \end{tabular}
 \caption[Mission planning input.]{Input files required for mission planning.}
@@ -511,80 +518,6 @@ MPFC exhaustively searches all possible missions (sequences of path segments) gi
 
 Unfortunately, opportunities for dynamic programming are limited. Each planning segment is dependent on having an estimate of the duration that has elapsed during the previous segments so that it can access the current time interval for the dynamic water currents forecast. Also, the paths are not between the nodes, but to and from entry and exit locations as previously discussed as demonstrated in Figure \ref{segment_example}. Memoization may occur for a paths "prefix", or, the sequence of previous segments minus the immediate previous. The specific case of the non-applicability of the immediate previous is that it may be a \textit{Coverage} segment whose stop point depends on the current node. If these restrictions were removed, the situation would be quite different. The mission planner could simply perform each \textit{Coverage} task and then the \textit{Goto} between each node. Enumerating the possible missions would be a simple table lookup for each estimated metric, totalling them for mission metrics. This motivates the question of to what extent does the water current's dynamism impact the mission planning. If a single water current snapshot could be used, it would allow much more solution reuse. 
 
-%-------------- Mission Planner Fully Connected -----
-\begin{algorithm}%
-\KwIn{Robot start coordinates $S$, \\
-~~~~~~Targets table $T_{targets}$, Safepoints table $T_{safe}$, \\
-~~~~~~Maximum duration $D_{max}$, Maximum work $W_{max}$       \\
-}
-\KwOut{Selected mission $m_{top}$, feasible missions $M_{feasible}$, infeasible missions $M_{infeasible}$}
-\textbf{Begin Mission Planner Fully-Connected}\\
-~~~Create table $T_{region2point}$, gives the closest point in coverage region to another point (see Figure \ref{segment_example}) \\
-~~~Initialize empty list of feasible missions $M_{feasible}$ \\
-~~~Intiialize empty list of infeasible missions $M_{infeasible}$ \\
-~~~Create list $P$ of possible mission node combos \tcp{Each is start node, a combo of targets $\in T_{targets}$, and a safepoint $\in T_{safe}$}
-~~~Update each mission $p \in P$ using $T_{region2point}$ to get the start and end points of each mission segment
-~~~\textbf{For} each mission $p \in P$ \\
-~~~~~~~Duration $d$ = 0 \\
-~~~~~~~\textbf{For} each consecutive pair of nodes $P_i, P_j$ \\ 
-~~~~~~~~~~~Invoke \textit{Goto} planner: $P_i \rightarrow P_j$ (Apply offset $d$) \\
-~~~~~~~~~~~Update $d$ with estimated duration elapsed in \textit{Goto} \\
-~~~~~~~~~~~Invoke \textit{Coverage}: Region $P_j$ (Apply offset $d$) \\
-~~~~~~~~~~~Update $d$ with estimated duration elapsed in \textit{Coverage} \\
-~~~~~~~Calculate total work $w$ from the results of each segment \\
-~~~~~~~\textbf{If} $d$ < $D_{max}$ and $w$ < $W_{max}$ \\
-~~~~~~~~~~~Append $p$ to $M_{feasible}$ \\
-~~~~~~~\textbf{Else} \\
-~~~~~~~~~~~Append $p$ to $M_{infeasible}$ \\
-~~~~Sort (descending) $M_{feasible}$ by duration, work, then reward \\
-~~~~Set $m_{top}$ as first element in $M_{feasible}$ \tcp{Feasible with highest reward}
-\textbf{End Mission Planner Fully-Connected}\\
-\caption[Mission Planner Fully-Connected.]{Mission Planner Fully-Connected.}
-\label{alg:MPFC}
-\end{algorithm}
-
-%------------------------------------------------
-%% An Example of an algorithm
-% {Evan, please take a look at the Algorithm \ref{algo:algorithm}. Try to write your algorithms using a similar format. Delete when you are done!}
-% {Okay, thanks: I will.}
-% OK, thanks
-
-% \begin{algorithm}
-% \caption{DP-based Approach for TSP-CPP}
-% \label{algo:algorithm}
-% \SetAlgoVlined
-% %\SetAlgoLined
-%  \KwIn{Depot $v_0$, vertices of the regions in $\mathcal{N}_0$, and sensor range $r\times r$ of the UAS. }
-%  \KwOut{A shortest path that covers all regions in $\mathcal{N}_0$ starting and ending at depot $v_0$, and its length.}
-% %Initialize $D(T, i, c_{ij})$ with $\infty$, for all $T \subseteq \mathcal{N}_0$, $i \in T$, and $j \in A$\; 
-% \ForEach{$i \in \mathcal{N}_0$}{
-% \ForEach{$q \in A$}{
-% $S_i \leftarrow f(c_{iq})$\;
-% $D(\{i\}, i, c_{iq}) \leftarrow d(v_0, s_{in_i}) + \sum_{m = 1}^{n_i-1}d(s_{im}, s_{i(m+1)})$\;
-% $P(\{i\}, i, c_{iq}) \leftarrow (S_i, v_0)$\;
-% }
-% }
-% \ForEach{$t = 2, \ldots, N$}{
-% \ForEach{$T \subseteq \mathcal{N}_0$ where $|T| = t$}{
-% \ForEach{$i \in T $}{
-% \ForEach{$q \in A $}{
-% \ForEach{$k \in T-\{i\} $}{
-% \ForEach{$l \in A $}{
-% $S_i \leftarrow f(c_{iq})$\;
-% $g(c_{kl},c_{iq}) \leftarrow d(c_{kl}, s_{in_i}) + \sum_{m = 1}^{n_i-1}d(s_{im}, s_{i(m+1)})$\;
-% $dist \leftarrow D(T-\{i\}, k, c_{kl}) + g(c_{kl}, c_{iq})$\;
-% \If{$dist < D(T, i, c_{iq}) $}{
-% $D(T, i, c_{iq}) \leftarrow dist$\;
-% $P(T, i, c_{iq}) \leftarrow (S_i, c_{kl})$\;
-% }
-% }
-% }
-% }
-% }
-% }
-% }
-% \Return{$\min\limits_{i \in \mathcal{N}_0, q \in A} D(\mathcal{N}_0, i, c_{iq}) + d(v_0, c_{iq})$ and the shortest path by backtracking over arcs in table $P$.}
-% \end{algorithm} 
 %-----------------------------------------------
 
 \subsubsection{Mission Planner Try \& Repair}
@@ -597,32 +530,36 @@ Unlike MPFC, this solution is not final since it has not been evaluated correctl
 
 The expectation is the sub-missions of highly fit missions will also be of high quality. Therefore, fixing a mission that (if the heuristic methods work as intended) barely exceeds the constraints will produce a good mission. Another approach would be to immediately evaluate the next-best mission. Two considerations led to the rejection of this approach. First, other missions with similar fitness are so because they cover the same amount of targets: the order is different. It is probably that such a mission will be another infeasible solution and in an undesired order. The culprit segment could be a \textit{Coverage} or \textit{Goto} task that is present in most or all of the missions of nearby fitness. A more direct approach is to find and remove the problematic segments. While possibly choosing suboptimally, this direct approach will be more efficient than verifying potentially a large number of missions. Consider a case where three smaller \textit{Coverage} tasks form a minimum pivot set. To discover that these three nodes should be removed by exhaustively evaluating the next-highest-fit mission would take significant computation. Because additional nodes increase reward, all those where only one of the three would be checked before those with two, and finally with three. Depending on the effectiveness of the heuristics, it returns to much that same problem as the fully connected planner. Perfecting the heuristics will be difficult because of the breadth of possible scenarios and environments and the limitations of sampling-based estimates for dynamic systems. Therefore, the try and repair approach is adopted to reduce computational effort in the presence of imperfect heuristics. 
 
+
+
+\begin{spacing}{0.5}
 %-------------------- Find Pivots ---------------
-\begin{algorithm}%
-\KwIn{path nodes $N$, \\
-~~~~~~path duration segments $D$, \\
-~~~~~~path work segments $W$, \\
-~~~~~~duration maximum $d$, \\ 
-~~~~~~work maximum $w$, \\
-}
-\KwOut{Solution $P$} \\
-\textbf{Begin FindPivots}\\
-~~~Initialize empty list of pivot sets $P$ \\
-~~~\textbf{If} sum($D$) < $d$ and sum($W$) < $w$ \\
-~~~~~~~Return $P$ \\
-~~~\textbf{For} each combination $C$ of the nodes $N$ \\
-~~~~~~~\textbf{If} sum($D$) - sum($w_i$ \forall $i$ \in $C$) < $d$ \\
-~~~~~~~~~~~and sum($W$) - sum($w_i$ \forall $i$ \in $C$) < $w$ \\
-~~~~~~~~~~~Append $C$ to list of pivot sets $P$ \\
-~~~\textbf{For} pivot set $p_i$ in $P$ \\
-~~~~~~~\textbf{For} pivot set $p_j$ in $P$ \\
-~~~~~~~~~~~~\textbf{If} $p_i \subset p_j$ \\
-~~~~~~~~~~~~~~~~Remove $p_i$ from $P$ \\
-\textbf{End FindPivots}\\
-\caption[Find Pivots.]{Find Pivots.} 
+\begin{algorithm}[H]
+\caption[Find Pivots.]{Find Pivots.}
 \label{alg:find_pivots}
+\KwIn{Path nodes $N$, path duration segments $D$, path work segments $W$, maximum duration $max_d$, and maximum work $max_w$.}
+\KwOut{List of candidate pivot sets $P$}
+$P \leftarrow$ empty list of candidate pivot sets\;
+\If{$\sum D < max_d \And \sum W < max_w$}{
+    \Return{$P$}\;
+}
+$C \leftarrow$ every combination of nodes $\in N$\;
+\ForEach{$i = 1, \ldots, len(N)$}{
+    \If{$\sum D - \sum d_c \forall c \in C_i < max_d \And \sum W - \sum w_c \forall c \in C_i < max_w$}{
+        Append $C_i$ to $P$\;
+    }
+}
+\ForEach{$i = 1, \ldots, len(P)$}{
+    \ForEach{$j = 1, \ldots, len(P)$}{
+        \If{$i \neq j \And p_i \subset p_j$}{
+             Remove $p_i$ from $P$\;
+        }
+    }
+}
+\Return{P}
 \end{algorithm}
 %---------------- End Find Pivots --------------
+\end{spacing}
 
 
 \chapter{Evaluation and Results}
@@ -644,14 +581,14 @@ Area ($m^2$) & Area (cells) & Upper left coordinate & Lower right coordinate \\
 \end{table}
 
 
-Although the Analyst is quite capable of target assignment, the targets used in this study are manually set in order to evaluate specific scenarios. Five targets were placed where obstacle avoidance would be required and the impact of water currents varies between pairs of targets. The selected targets are shown in Table \ref{tbl:targets} and the robot's allowed safepoints in Table \ref{tbl:safepoints}. Both of these tables are exactly the CSV files used in the program. In each target, the margin (extra padding of occupied cells to avoid collisions with terrain) is set to 1 and the non-target roam cells to 0. Both are only useful when planning \textit{Coverage} tasks with terrain, and so are not related to these experiments. The margin and roam columns are only shown as examples of how targets are specified in the system. A single safepoint is used. Additional safepoints offer more flexibility to the system, but increase planning complexity without providing interesting results. 
+Although the \textit{\textit{Analyst}} is quite capable of target assignment, the targets used in this study are manually set in order to evaluate specific scenarios. Five targets were placed where obstacle avoidance would be required and the impact of water currents varies between pairs of targets. The selected targets are shown in Table \ref{tbl:targets} and the robot's allowed safepoints in Table \ref{tbl:safepoints}. Both of these tables are exactly the CSV files used in the program. In each target, the margin (extra padding of occupied cells to avoid collisions with terrain) is set to 1 and the non-target roam cells to 0. Both are only useful when planning \textit{Coverage} tasks with terrain, and so are not related to these experiments. The margin and roam columns are only shown as examples of how targets are specified in the system. A single safepoint is used. Additional safepoints offer more flexibility to the system, but increase planning complexity without providing interesting results. 
 
-The entities map was first manually drawn using the GNU Image Manipulation Program. Each pixel represents presence or absence of an entity with the color encoding entity class. The image was then perturbed using a simple cellular automata with probabilistic rules for growth and death of entities. The maps of each stage of the cellular automata are given to the Analyst to simulate satellite images collected over time and processed into classifications. The Analyst uses these maps to calculate the density, speed, and acceleration of entities as previously discussed. Each cell is characterized by the Analyst. Thus, in the following experiments, the targets were chosen manually but the rewards are specified by the Analyst. The relevant system settings are given in Table \ref{sys_settings}
+The entities map was first manually drawn using the GNU Image Manipulation Program. Each pixel represents presence or absence of an entity with the color encoding entity class. The image was then perturbed using a simple cellular automata with probabilistic rules for growth and death of entities. The maps of each stage of the cellular automata are given to the \textit{\textit{Analyst}} to simulate satellite images collected over time and processed into classifications. The \textit{\textit{Analyst}} uses these maps to calculate the density, speed, and acceleration of entities as previously discussed. Each cell is characterized by the \textit{\textit{Analyst}}. Thus, in the following experiments, the targets were chosen manually but the rewards are specified by the \textit{\textit{Analyst}}. The relevant system settings are given in Table \ref{sys_settings}
 
 %%%%%%%%%%%%%%%%%%%%%%
 % Experimental Setup %
 %%%%%%%%%%%%%%%%%%%%%%
-\begin{figure*}
+\begin{figure}[H]
     \centering
     \begin{subfigure}[b]{0.475\textwidth}
         \centering
@@ -682,7 +619,7 @@ The entities map was first manually drawn using the GNU Image Manipulation Progr
     \end{subfigure}
     \caption[Environment overview.]{Environment overview.}
     \label{fig:env}
-\end{figure*}
+\end{figure}
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 % End experimental Setup %
 %%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -690,7 +627,7 @@ The entities map was first manually drawn using the GNU Image Manipulation Progr
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Water currents time intervals %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{figure*}
+\begin{figure}[H]
     \captionsetup{justification=centering}
     \centering
     \begin{subfigure}[b]{0.475\textwidth}
@@ -723,7 +660,7 @@ The entities map was first manually drawn using the GNU Image Manipulation Progr
     \end{subfigure}
     \caption[Dynamic water currents.]{Water currents vary over time $t$ and are stored in discrete intervals $t_{interval}$.} 
     \label{fig:currents_intervals}
-\end{figure*}
+\end{figure}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % End Water currents time intervals %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -777,11 +714,11 @@ ID & Lon & Lat\\
     \label{tbl:safepoints}
 \end{table}
 
-\section{Surveyor Results}
+\section{\textit{Surveyor} Results}
 
 \subsection{\textit{Goto} Path Planning}
 
-The \textit{Goto} planning results form the bulk of the analysis, and will be used to answer some of the questions posed in Section \ref{section:contributions}. A number of runs are analyzed with variation on the weights, but all are evaluated using six \testit{Goto} tasks. Three pairs of points are selected and each yields two tasks based on reversing the start and stop points. This reversal is to ensure that the water current impacts the system enough that the direction of planning affects the result over them same area. The six paths are described in Table \ref{tbl:goto_tasks}.
+The \textit{Goto} planning results form the bulk of the analysis, and will be used to answer some of the questions posed in Section \ref{section:contributions}. A number of runs are analyzed with variation on the weights, but all are evaluated using six \textit{Goto} tasks. Three pairs of points are selected and each yields two tasks based on reversing the start and stop points. This reversal is to ensure that the water current impacts the system enough that the direction of planning affects the result over them same area. The six paths are described in Table \ref{tbl:goto_tasks}.
 
 \begin{table}[H]\small
     \begin{tabular}{|l|l|l|l|l|l|l|l|l|l|l|l|}
@@ -816,7 +753,7 @@ When work and reward are both disabled, the behavior is as expected. When a stra
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Goto paths for 1-A, 1-B %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{figure*}
+\begin{figure}[H]
     \centering
     \begin{subfigure}[b]{0.4\textwidth}
         \centering
@@ -876,7 +813,7 @@ When work and reward are both disabled, the behavior is as expected. When a stra
       
     \caption{Solution paths for tasks 1-A and 1-B, with and without work and reward concerns.}
     \label{fig:Paths_1-A_1-B}
-\end{figure*}
+\end{figure}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %End Goto paths for 1-A, 1-B %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -884,7 +821,7 @@ When work and reward are both disabled, the behavior is as expected. When a stra
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Goto paths for 2-A, 2-B %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{figure*}
+\begin{figure}[H]
     \centering
     \begin{subfigure}[b]{0.4\textwidth}
         \centering
@@ -944,7 +881,7 @@ When work and reward are both disabled, the behavior is as expected. When a stra
 
     \caption{Solution paths for tasks 2-A and 2-B, with and without work and reward concerns.}
     \label{fig:Paths_2-A_2-B}
-\end{figure*}
+\end{figure}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %End Goto paths for 2-A, 2-B %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -952,7 +889,7 @@ When work and reward are both disabled, the behavior is as expected. When a stra
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Goto paths for 3-A, 3-B %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{figure*}
+\begin{figure}[H]
     \centering
     \begin{subfigure}[b]{0.4\textwidth}
         \centering
@@ -1013,7 +950,7 @@ When work and reward are both disabled, the behavior is as expected. When a stra
 
     \caption{Solution paths for tasks 3-A and 3-B, with and without work and reward concerns.} 
     \label{fig:Paths_3-A_3-B}
-\end{figure*}
+\end{figure}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %End Goto paths for 3-A, 3-B %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1028,7 +965,7 @@ The fitness function combines the criteria in such a way that it captures the im
 
 Next, the situation is made more complicated with the addition of work minimization and reward maximization. Work's Joules and reward's nonunit values tend to run large, so the fitness in this situation should not be compared to fitness in the terrain-only situation. Using all three algorithms, the increased path planning complexity is reflected in the wider fitness spread and slowed convergence. GA shows especially poor performance, coming nowhere near convergence in the 100 iterations allowed. DE, BEE, and PSO show increasingly better performance. The best, PSO, is much less affected by the additional criteria than the others. The reliability of PSO compared to the others is further highlighted in the box plots showing spread of each path characteristic. As before, PSO maintains the tightest bounds on all criteria. GA continues to perform the worst. Every test has displayed a consistent ranking of algorithm quality, with one exception: DE's reward spread is worse than BEE, but does have a tighter spread making it more reliable. 
 
-PSO has beaten the other three algorithms in all respects evaluated. It converges faster and with greater stability while also providing the best optimization for distance, duration, work and reward. Even though PSO is challenged by the greater complexity of multi-objective optimization (some of which are in opposition: work vs reward), it converges reasonably well in the 100 iterations allowed. All four algorithms are options in the system, since it is trivial to do so with the PyGMO libray, but PSO is made to be the Surveyor's default \textit{Goto} path planning solver. 
+PSO has beaten the other three algorithms in all respects evaluated. It converges faster and with greater stability while also providing the best optimization for distance, duration, work and reward. Even though PSO is challenged by the greater complexity of multi-objective optimization (some of which are in opposition: work vs reward), it converges reasonably well in the 100 iterations allowed. All four algorithms are options in the system, but PSO is made to be the \textit{Surveyor}'s default \textit{Goto} path planning solver. 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Goto planner PSO Settings %
@@ -1049,86 +986,86 @@ PSO has beaten the other three algorithms in all respects evaluated. It converge
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Convergence curves %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{figure*}
+\begin{figure}[H]
     \captionsetup{justification=centering}
     \centering
         \includegraphics[width=0.75\textwidth,trim={0cm 0.75cm 0cm 0.75cm},clip]{conv_PSO_a.eps}
     \caption{Convergence for particle swarm optimization, not optimizing work and reward}
     \label{fig:convergence_a_PSO}
-\end{figure*}
+\end{figure}
 
-\begin{figure*}
+\begin{figure}[H]
     \captionsetup{justification=centering}
     \centering
         \includegraphics[width=0.75\textwidth,trim={0cm 0.75cm 0cm 0.75cm},clip]{conv_BEE_a.eps}
     \caption[]{Convergence for bee colony optimization, not optimizing work and reward}
     \label{fig:convergence_a_BEE}
-\end{figure*}
+\end{figure}
 
-\begin{figure*}
+\begin{figure}[H]
     \captionsetup{justification=centering}
     \centering
         \includegraphics[width=0.75\textwidth,trim={0cm 0.75cm 0cm 0.75cm},clip]{conv_DE_a.eps}
     \caption{Convergence for differential evolution, not optimizing work and reward}
     \label{fig:convergence_a_DE}
-\end{figure*}
+\end{figure}
 
-\begin{figure*}
+\begin{figure}[H]
     \captionsetup{justification=centering}
     \centering
         \includegraphics[width=0.75\textwidth,trim={0cm 0.75cm 0cm 0.75cm},clip]{conv_GA_a.eps}
     \caption{Convergence for genetic algorithm, not optimizing work and reward}
     \label{fig:convergence_a_SGA}
-\end{figure*}
+\end{figure}
 
-\begin{figure*}
+\begin{figure}[H]
     \captionsetup{justification=centering}
     \centering
         \includegraphics[width=0.75\textwidth,trim={0cm 0.75cm 0cm 0.75cm},clip]{conv_avg_a.eps}
     \caption{Average convergence for all algorithms, not optimizing work and reward}
     \label{fig:convergence_a_avg}
-\end{figure*}
+\end{figure}
 
 
-\begin{figure*}
+\begin{figure}[H]
     \captionsetup{justification=centering}
     \centering
         \includegraphics[width=0.75\textwidth,trim={0cm 0.75cm 0cm 0.75cm},clip]{conv_PSO_b.eps}
     \caption{Convergence for particle swarm optimization, optimizing work and reward}
     \label{fig:convergence_b_PSO}
-\end{figure*}
+\end{figure}
 
-\begin{figure*}
+\begin{figure}[H]
     \captionsetup{justification=centering}
     \centering
         \includegraphics[width=0.75\textwidth,trim={0cm 0.75cm 0cm 0.75cm},clip]{conv_BEE_b.eps}
     \caption{Convergence for bee colony optimization, optimizing work and reward}
     \label{fig:convergence_b_BEE}
-\end{figure*}
+\end{figure}
 
-\begin{figure*}
+\begin{figure}[H]
     \captionsetup{justification=centering}
     \centering
         \includegraphics[width=0.75\textwidth,trim={0cm 0.75cm 0cm 0.75cm},clip]{conv_DE_b.eps}
     \caption{Convergence for differential evolution, optimizing work and reward}
     \label{fig:convergence_b_DE}
-\end{figure*}
+\end{figure}
 
-\begin{figure*}
+\begin{figure}[H]
     \captionsetup{justification=centering}
     \centering
         \includegraphics[width=0.75\textwidth,trim={0cm 0.75cm 0cm 0.75cm},clip]{conv_GA_b.eps}
     \caption{Convergence for genetic algorithm, optimizing work and reward}   
     \label{fig:convergence_b_SGA}
-\end{figure*}
+\end{figure}
 
-\begin{figure*}
+\begin{figure}[H]
     \captionsetup{justification=centering}
     \centering
         \includegraphics[width=0.75\textwidth,trim={0cm 0.75cm 0cm 0.75cm},clip]{conv_avg_b.eps}
     \caption{Average convergence for all algorithms, optimizing work and reward}
     \label{fig:convergence_b_avg}
-\end{figure*}
+\end{figure}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 % End convergence curves %
@@ -1139,75 +1076,75 @@ PSO has beaten the other three algorithms in all respects evaluated. It converge
 % Algorithm compare %
 %%%%%%%%%%%%%%%%%%%%%
 
-\begin{figure*}
+\begin{figure}[H]
     \captionsetup{justification=centering}
     \centering
     \includegraphics[width=0.75\textwidth,trim={0cm 0.75cm 0cm 0.75cm},clip]{EXP3_histo_distance_a.eps}
     \caption{\textit{Goto} path distance distribution. Not optimizing work and reward. }
     \label{fig:algcompare_a_distance}
-\end{figure*}
+\end{figure}
 
-\begin{figure*}
+\begin{figure}[H]
     \captionsetup{justification=centering}
     \centering
     \includegraphics[width=0.75\textwidth,trim={0cm 0.75cm 0cm 0.75cm},clip]{EXP3_histo_duration_a.eps}
     \caption{\textit{Goto} path duration distribution. Not optimizing work and reward. }
     \label{fig:algcompare_a_duration}
-\end{figure*}
+\end{figure}
 
-\begin{figure*}
+\begin{figure}[H]
     \captionsetup{justification=centering}
     \centering
     \includegraphics[width=0.75\textwidth,trim={0cm 0.75cm 0cm 0.75cm},clip]{EXP3_histo_work_a.eps}
     \caption{\textit{Goto} path work distribution. Not optimizing work and reward. }
     \label{fig:algcompare_a_work}
-\end{figure*}
+\end{figure}
 
-\begin{figure*}
+\begin{figure}[H]
     \captionsetup{justification=centering}
     \centering
     \includegraphics[width=0.75\textwidth,trim={0cm 0.75cm 0cm 0.75cm},clip]{EXP3_histo_reward_a.eps}
     \caption{\textit{Goto} path distance distribution. Optimizing work and reward. }
     \label{fig:algcompare_a_reward}
-\end{figure*}
+\end{figure}
 
-\begin{figure*}
+\begin{figure}[H]
     \captionsetup{justification=centering}
     \centering
     \includegraphics[width=0.75\textwidth,trim={0cm 0.75cm 0cm 0.75cm},clip]{EXP3_histo_distance_b.eps}
     \caption{\textit{Goto} path duration distribution. Optimizing work and reward. }
     \label{fig:algcompare_b_distance}
-\end{figure*}
+\end{figure}
 
-\begin{figure*}
+\begin{figure}[H]
     \captionsetup{justification=centering}
     \centering
     \includegraphics[width=0.75\textwidth,trim={0cm 0.75cm 0cm 0.75cm},clip]{EXP3_histo_duration_b.eps}
     \caption{\textit{Goto} path work distribution. Optimizing work and reward. }
     \label{fig:algcompare_b_duration}
-\end{figure*}
+\end{figure}
 
-\begin{figure*}
+\begin{figure}[H]
     \captionsetup{justification=centering}
     \centering
     \includegraphics[width=0.75\textwidth,trim={0cm 0.75cm 0cm 0.75cm},clip]{EXP3_histo_work_b.eps}
     \caption{\textit{Goto} path reward distribution. Optimizing work and reward. }
     \label{fig:algcompare_b_work}
-\end{figure*}
+\end{figure}
 
-\begin{figure*}
+\begin{figure}[H]
     \captionsetup{justification=centering}
     \centering
     \includegraphics[width=0.75\textwidth,trim={0cm 0.75cm 0cm 0.75cm},clip]{EXP3_histo_reward_b.eps}
     \caption{\textit{Goto} path reward distribution. Not optimizing work and reward. }
     \label{fig:algcompare_b_reward}
-\end{figure*}
+\end{figure}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%
 % End algorithm compare %
 %%%%%%%%%%%%%%%%%%%%%%%%%
 
-The system should be able to influence path planning to achieve a desired planning behavior. This means that settings should be set that can make the planner more oriented around efficient travel or more interested in collecting opportunistic rewards. Optimization weights must be able to be manipulated such that they achieve this effect, and the weights should transfer to other situations. In other words, the is not useful if the weights have to be tuned for each path. If a set of weights emphasis reward for one scenario, it should do so for most, if not all, scenarios. In the following, the weights are tuned to see if the Surveyor can be made to emphasis efficiency, reward, and a balance of both. Given the large scale of the environments, subtle deviations for increasing the reward are desired but should avoid going far off course. The exact bounds of what defines too far is subjective and application-specific, but the follows gives a sense of what is possible. 
+The system should be able to influence path planning to achieve a desired planning behavior. This means that settings should be set that can make the planner more oriented around efficient travel or more interested in collecting opportunistic rewards. Optimization weights must be able to be manipulated such that they achieve this effect, and the weights should transfer to other situations. In other words, the is not useful if the weights have to be tuned for each path. If a set of weights emphasis reward for one scenario, it should do so for most, if not all, scenarios. In the following, the weights are tuned to see if the \textit{Surveyor} can be made to emphasis efficiency, reward, and a balance of both. Given the large scale of the environments, subtle deviations for increasing the reward are desired but should avoid going far off course. The exact bounds of what defines too far is subjective and application-specific, but the follows gives a sense of what is possible. 
 
 Several random pairs of weights are generated to find the desired behavior: opportunistic-but-largely-efficient path planning. Meaning, additional work and/or reward optimization occurs such that opportunities for extra reward are taken advantage of but without dramatically harming efficiency. Four illustrative sets of weights are shown in Table \ref{tbl:weight_sets}, followed by images of runs using them. Sets $S^a$ and $S^b$ show behavior that meet the planning criteria; $S^b$ will be shown to be the better of the two. For comparison, $S^c$ and $S^d$ yield paths that collect much more reward but at massive loss of efficiency. These paths are not suitable, as discussed. 
 
@@ -1233,8 +1170,7 @@ Several random pairs of weights are generated to find the desired behavior: oppo
 
 Weight sets $S^a$ and $S^b$ are compared in Table \ref{tbl:weight_compare_a_b}. Visually, it is hard to determine which is weights perform better; both are reasonably close to the distance-only optimization to image that they are collecting rewards appropriately. The path attributes (duration, work, and reward) are required to fully characterize the behavior of these weights. A comparison of $S^a$ and $S^b$ is given in Table \ref{tbl:weightDiff_a_b}. The desired path planning is that reward optimization is present but without substantially deviating from an efficient path. Unfortunately, this is subjective but it is possible to identify scenarios where one set of weights performed better than another. In this case, $S^b$ can reasonably be said to outperform $S^c$. It is reported here, since was the best out of a number of sets randomly tried. Consider first the reward. In all cases, the reward using $S^b$, $S^b_{reward}$, is either greater than $S^a$ or approximately equivalent. In the worst case, the reward is 0.03 less than using $S^a$ for the same \textit{Goto} task. In the best case, it collects $61\%$ more reward than $S^a$. The ability to collect reward without major efficient loss is dependent on the availability of nearby reward or located such that water currents can be taken advantage of to reach them. So, there will be paths where the reward is stable even when the weight on reward is higher. This is the case for \textit{Goto} task 1-B, where there is no significant change in duration, work, or reward. This is better than the planner's reward maximization forcing it to go too far off course. But there are also situations that display dramatic increase in the reward with minimal impact on efficiency. This is the case for \textit{Goto} task 3-A: the $61\%$ reward increase occurred while actually improving duration and work. In order to clarify how these percentages reflect differences between path behavior, see Table \ref{tbl:weightDiff_d_b} for a comparison of $S^b$ with the highly inefficient $S^d$. While it has to be acknowledged that an objective assertion of the best sets of weights is difficult and application-specific, it can be said that the behavior observed using $S^b$ (among other weight pairs) enables the exact \textit{Goto} pat planning that the author envisioned for this system. 
 
-These initial results are used to define an algorithm for automatically tuning weights given constraints. The constraint is the percent that the path is allowed to deviate from the path made if reward is not being maximized. The percent is a manually-set tolerance that represents the user's specification of \textit{desired path behavior}, a concept that was previously undefined in this text. The surveyor, through experimenting with a range of weights, is responsible for finding the weights that meet the criteria. The critical element is that the surveyor does not tune wieghts for each path, as tuning involves several \texit{Goto} invocations. Instead the weights selected should be used for multiple paths. The results observed suggest that it is reasonable to do so. If it is discovered that sufficient differences in the environment cause the path planning to stray from the desired behavior (exceed constraints), then perhaps environments may be classified into types that correspond to a set of learned weights. 
-
+These initial results are used to define an algorithm for automatically tuning weights given constraints. The constraint is the percent that the path is allowed to deviate from the path made if reward is not being maximized. The percent is a manually-set tolerance that represents the user's specification of \textit{desired path behavior}, a concept that was previously undefined in this text. The \textit{Surveyor}, through experimenting with a range of weights, is responsible for finding the weights that meet the criteria. Path planning is done with the work and reward criteria disabled, leaving just the obstacle-free minimized distance path. This is used a baseline. The \textit{Surveyor} then adds in work and reward weights over a range with some interval (smaller intervals increase the number of \textit{Goto} invocations but allow finer tuning). The weights whose path gives the best reward within constraints is selected. The critical element is that the \textit{Surveyor} does not tune wieghts for each path, as tuning involves several \textit{Goto} invocations. Instead the weights selected should be used for multiple paths. The results observed suggest that it is reasonable to do so. If it is discovered that sufficient differences in the environment cause the path planning to stray from the desired behavior (exceed constraints), then perhaps environments may be classified into types that correspond to a set of learned weights. 
 
 % Compare planning with weights S^a, S^b
 \begin{table}[H]
@@ -1283,7 +1219,7 @@ These initial results are used to define an algorithm for automatically tuning w
 \end{table}
 
 % Weights investigation: Sa
-\begin{figure*}
+\begin{figure}[H]
     \centering
     \begin{subfigure}[b]{0.24\textwidth}
         \centering
@@ -1365,10 +1301,10 @@ These initial results are used to define an algorithm for automatically tuning w
     \end{subfigure}
     \caption[Solutions for Goto tasks using weights $S^a$.]{Solutions for Goto tasks, $S^a = (W_{work} = 0.001$, $W_{reward} = 0.001)$. \\ (With and without setting $W_{reward} = 0$).}
     \label{fig:weights_Sa}
-\end{figure*}
+\end{figure}
 
 % Weights investigation: Sb
-\begin{figure*}
+\begin{figure}[H]
     \centering
     \begin{subfigure}[b]{0.24\textwidth}
         \centering
@@ -1411,10 +1347,10 @@ These initial results are used to define an algorithm for automatically tuning w
     \end{subfigure}
     \caption[Solutions for Goto tasks using weights $S^b$.]{Solutions for Goto tasks, $S^b = (W_{work} = 0.01$, $W_{reward} = 0.005)$.}
     \label{fig:weights_Sb}
-\end{figure*}
+\end{figure}
 
 % Weights investigation: Sc
-\begin{figure*}
+\begin{figure}[H]
     \centering
     \begin{subfigure}[b]{0.24\textwidth}
         \centering
@@ -1492,10 +1428,10 @@ These initial results are used to define an algorithm for automatically tuning w
     \end{subfigure}
     \caption[Solutions for Goto tasks using weights $S^c$.]{Solutions for Goto tasks, $S^c = (W_{work} = 0.00001$, $W_{reward} = 0.01)$. \\ (With and without setting $W_{reward} = 0$).}
     \label{fig:weights_Sc}
-\end{figure*}
+\end{figure}
 
 % Weights investigation Sd
-\begin{figure*}
+\begin{figure}[H]
     \centering
     \begin{subfigure}[b]{0.24\textwidth}
         \centering
@@ -1537,7 +1473,7 @@ These initial results are used to define an algorithm for automatically tuning w
     \vskip\baselineskip       
     \caption[Solutions for Goto tasks using weights $S^d$.]{Solutions for Goto tasks, $S^d = (W_{work} = 0.011$, $W_{reward} = 0.01)$.}
     \label{fig:weights_Sd}
-\end{figure*}
+\end{figure}
 
 \section{Coverage Planner}
 
@@ -1611,80 +1547,80 @@ Experimental results are summarized in Tables \ref{tbl:coverage_work_measures} a
 %%%%%%%%%%%%%%%%%%%%%%%%%
 % Work coverage compare %
 %%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{figure*}
+\begin{figure}[H]
     \captionsetup{justification=centering}
     \centering
     \includegraphics[width=\textwidth,trim={0cm 0cm 0cm 0.75cm},clip]{work_r1.eps}
     \caption{\textit{Coverage} path work in region 1.}
     \label{fig:coverage_noterrain_work_r1}
-\end{figure*}
-\begin{figure*}
+\end{figure}
+\begin{figure}[H]
     \captionsetup{justification=centering}
     \centering
     \includegraphics[width=\textwidth,trim={0cm 0cm 0cm 0.75cm},clip]{diff_r1.eps}
     \caption{\textit{Coverage} path work in differences $R_1$.}
     \label{fig:coverage_noterrain_diff_r1}
-\end{figure*}
+\end{figure}
 
-\begin{figure*}
+\begin{figure}[H]
     \captionsetup{justification=centering}
     \centering
     \includegraphics[width=\textwidth,trim={0cm 0cm 0cm 0.75cm},clip]{work_r2.eps}
     \caption{\textit{Coverage} path work in $R_2$.}
     \label{fig:coverage_noterrain_work_r2}
-\end{figure*}
-\begin{figure*}
+\end{figure}
+\begin{figure}[H]
     \captionsetup{justification=centering}
     \centering
     \includegraphics[width=\textwidth,trim={0cm 0cm 0cm 0.75cm},clip]{diff_r2.eps}
     \caption{\textit{Coverage} path work in differences $R_2$.}
     \label{fig:coverage_noterrain_diff_r2}
-\end{figure*}
+\end{figure}
 
-\begin{figure*}
+\begin{figure}[H]
     \captionsetup{justification=centering}
     \centering
     \includegraphics[width=\textwidth,trim={0cm 0cm 0cm 0.75cm},clip]{work_r3.eps}
     \caption{\textit{Coverage} path work in $R_3$.}
     \label{fig:coverage_noterrain_work_r3}
-\end{figure*}
-\begin{figure*}
+\end{figure}
+\begin{figure}[H]
     \captionsetup{justification=centering}
     \centering
     \includegraphics[width=\textwidth,trim={0cm 0cm 0cm 0.75cm},clip]{diff_r3.eps}
     \caption{\textit{Coverage} path work differences in $R_3$.}
     \label{fig:coverage_noterrain_diff_r3}
-\end{figure*}
+\end{figure}
 
-\begin{figure*}
+\begin{figure}[H]
     \captionsetup{justification=centering}
     \centering
     \includegraphics[width=\textwidth,trim={0cm 0cm 0cm 0.75cm},clip]{work_r4.eps}
     \caption{\textit{Coverage} path work in $R_4$.}
     \label{fig:coverage_noterrain_work_r4}
-\end{figure*}
-\begin{figure*}
+\end{figure}
+\begin{figure}[H]
     \captionsetup{justification=centering}
     \centering
     \includegraphics[width=\textwidth,trim={0cm 0cm 0cm 0.75cm},clip]{diff_r4.eps}
     \caption{\textit{Coverage} path work differences in $R_4$.}
     \label{fig:coverage_noterrain_diff_r4}
-\end{figure*}
+\end{figure}
 
-\begin{figure*}
+\begin{figure}[H]
     \captionsetup{justification=centering}
     \centering
     \includegraphics[width=\textwidth,trim={0cm 0cm 0cm 0.75cm},clip]{work_r5.eps}
     \caption{\textit{Coverage} path work in $R_5$.}
     \label{fig:coverage_noterrain_work_r5}
-\end{figure*}
-\begin{figure*}
+\end{figure}
+\begin{figure}[H]
     \captionsetup{justification=centering}
     \centering
     \includegraphics[width=\textwidth,trim={0cm 0cm 0cm 0.75cm},clip]{diff_r5.eps}
     \caption{\textit{Coverage} path work differences in $R_5$.}
     \label{fig:coverage_noterrain_diff_r5}
-\end{figure*}
+\end{figure}
 
 \subsection{Mission Planning}
 
@@ -1710,7 +1646,7 @@ MPFC evaluates every  possible path at great computational cost, even if accessi
 
 In deciding which attribute to base selection on, the path measurements are compared. Three missions are shown in Table \ref{tbl:MPFC_solutions}. These are missions where either the distance, work, or reward is at is best value (min or max as appropriate). Duration is proportional to distance and ignored. Figure \ref{fig:MPFC_box_withreward} shows how these missions compare to all the others. An immediate problem appears: the large width of candidate best solutions. The efficiency measurements are located within both the best and worst outliers. 
 
-The reward width is actually not that massive: 200000 is large, but is less than half of what is achieved in region 2: the second smallest (see \Figure \ref{fig:env_targets}). Meanwhile, the width of the duration is over an hour which means that it adds that much time when choosing best reward mission over the most efficient. Figure \ref{fig:MPFC_box_noreward} shows how the missions compare when not including the reward optimal as a candidate. The remaining two missions show a much tighter bound and are both in their outliers, which demonstrates the synergy in minimizers that both promote path efficiency. For this example system, the Surveyor is set to select the feasible mission with the greatest number of targets that also has the minimum estimated work. In this case, the same route is chosen whether using distance or work. The top 5 missions, according to MPFC, are shown in Table \ref{tbl:MPFC_solutions_top5}. These are chosen whether using distance or work as the selection criteria.
+The reward width is actually not that massive: 200000 is large, but is less than half of what is achieved in region 2: the second smallest (see Figure \ref{fig:env_targets}). Meanwhile, the width of the duration is over an hour which means that it adds that much time when choosing best reward mission over the most efficient. Figure \ref{fig:MPFC_box_noreward} shows how the missions compare when not including the reward optimal as a candidate. The remaining two missions show a much tighter bound and are both in their outliers, which demonstrates the synergy in minimizers that both promote path efficiency. For this example system, the \textit{Surveyor} is set to select the feasible mission with the greatest number of targets that also has the minimum estimated work. In this case, the same route is chosen whether using distance or work. The top 5 missions, according to MPFC, are shown in Table \ref{tbl:MPFC_solutions_top5}. These are chosen whether using distance or work as the selection criteria.
 
 \begin{table}[H]\small
     \begin{tabular}{|l|l|l|l|l|l|}
@@ -1728,38 +1664,38 @@ Node sequence & Optimized Attribute & Distance & Work & Reward \\
     \label{tbl:MPFC_solutions}
 \end{table}
 
-\begin{figure*}
+\begin{figure}[H]
     \captionsetup{justification=centering}
     \centering
     %\includegraphics[width=\textwidth,trim={0cm 0cm 0cm 0.75cm},clip]{diff_r4.eps}
     \includegraphics[width=\textwidth]{EXP4_MPFC_box_r.eps}
     \caption[Distribution of path attributes.]{Distribution of path attributes. Those labeled \textit{Has Best} include the missions where at least on path attribute is optimal. Those labeled \textit{No Best} have no optimal attribute.}
     \label{fig:MPFC_box_withreward}
-\end{figure*}
+\end{figure}
 
-\begin{figure*}
+\begin{figure}[H]
     \captionsetup{justification=centering}
     \centering
     %\includegraphics[width=\textwidth,trim={0cm 0cm 0cm 0.75cm},clip]{diff_r4.eps}
     \includegraphics[width=\textwidth]{EXP4_MPFC_box_nr.eps}
     \caption[Distribution of path attributes, without reward in selecting best candidate solution.]{Distribution of path attributes. Those labeled \textit{Has Best} include the missions where at least on path attribute is optimal. Those labeled \textit{No Best} have no optimal attribute. Unlike Figure \ref{fig:MPFC_box_withreward}, the path with maximum reward is not included in \textit{Has Best}.}
     \label{fig:MPFC_box_noreward}
-\end{figure*}
+\end{figure}
 
 \begin{table}[H]\small
     \begin{tabular}{|l|l|l|l|l|}
 \hline
 \thead{Route} & \thead{Distance \\ (MPFC)} & \thead{Duration \\ (MPFC)} & \thead{Work (MPFC)} & \thead{Reward (MPFC)} \\
 \hline
-(0 1 3 2 5 4 6)  &  78709.46 & 511.10 & 3.581165e+08 & 7399391.45  \\
+(0 1 3 2 5 4 6)  &  78709.46 & 511.10 & 3.581165e+08 & 7399391.45 \\
 \hline 
-(0 1 2 5 3 4 6)  &  78930.23 & 512.53 & 3.584078e+08 & 7446916.43  \\
+(0 1 2 5 3 4 6)  &  78930.23 & 512.53 & 3.584078e+08 & 7446916.43 \\
 \hline
-(0 5 4 3 2 1 6)  &  79155.94 & 514.00 & 3.587672e+08 & 7375456.17  \\
+(0 5 4 3 2 1 6)  &  79155.94 & 514.00 & 3.587672e+08 & 7375456.17\\
 \hline
-(0 3 2 5 4 1 6)  &  79156.36 & 514.00 & 3.591452e+08 & 7422834.67  \\
+(0 3 2 5 4 1 6)  &  79156.36 & 514.00 & 3.591452e+08 & 7422834.67 \\
 \hline 
-(0 1 4 5 2 3 6)  &  79280.62 & 514.81 & 3.593909e+08 & 7385970.29  \\
+(0 1 4 5 2 3 6)  &  79280.62 & 514.81 & 3.593909e+08 & 7385970.29 \\
 \hline 
     \end{tabular}
     \caption[MPFC: top 5 missions with respect to distance]{Mission Planner Fully-Connected: top 5 missions with respect to distance or work}
@@ -1772,24 +1708,24 @@ These results will be used to guide the development of measurements for the heur
 
 The top 5 missions selected using MPTR, with respect to distance, are shown in Table \ref{tbl:MPTR_solutions_top5_distance}. Using work, the top 5 missions are in Table \ref{tbl:MPTR_solutions_top5_work}. The immediate result is that the top mission chosen by MPTR does not match that of MPFC. This is not necessarily problematic since multiple missions could share very similar properties. However, that is not the case here. The difference between the two is 1969.78, whereas the difference between the top two MPFC choices is 190.15. To further illustrate the poor choice by MPTR, the difference between the MPC top choice and its fifth choice is still only 571.16. Note that these differences are calculated using the more accurate MPFC measurements. The top choice by MPTR is the 81st for MPFC. Interestingly, the second MPTR choice is the top MPFC choice; but with no way to determine this without also running MPFC, this does not help in selecting the best mission. There is the possibility that the second choice is a more accurate representation of the MPTR results and that the first is an outlier. This is not the case: of the top 5 MPTR choices, only the second appears within the top 5 MPFC. There is a complete lack of ability for MPTR measurements to predict MPFC. 
 
-In an effort to salvage the result, an even more naive heuristic was tried. The goal was to show that MPTR's method at least improved upon using the straight-line euclidean distance between target region centers. The memoized \testit{Coverage} results were still used, but \texit{Goto} paths were replaced with this simple straight-line measurement; no consideration of terrain, currents, etc. The results are shown in Table \ref{tbl:straight_solutions_top5}. The result is not what was expected. The top result matches the top for MPFC. Unline MPTR, this is not simply a random outlier: $3/5$ of the top five using straight-line are in the top 5 MPFC. The worst of these is only 665.77 cells difference in distance from the top MPFC choice, which is only $33.80\%$ of the difference between the top choices for MPFC and MPTR. The straight-line distance is not perfect, but is a better predictor of the top MPFC missions that MPTR. Most importantly, MPTR still took ~5 hours, while this new version performed the entire mission planning in under a minute. 
+In an effort to salvage the result, an even more naive heuristic was tried. The goal was to show that MPTR's method at least improved upon using the straight-line euclidean distance between target region centers. The memoized \textit{Coverage} results were still used, but \textit{Goto} paths were replaced with this simple straight-line measurement; no consideration of terrain, currents, etc. The results are shown in Table \ref{tbl:straight_solutions_top5}. The result is not what was expected. The top result matches the top for MPFC. Unline MPTR, this is not simply a random outlier: $3/5$ of the top five using straight-line are in the top 5 MPFC. The worst of these is only 665.77 cells difference in distance from the top MPFC choice, which is only $33.80\%$ of the difference between the top choices for MPFC and MPTR. The straight-line distance is not perfect, but is a better predictor of the top MPFC missions that MPTR. Most importantly, MPTR still took ~5 hours, while this new version performed the entire mission planning in under a minute. 
 
 Given this result, MPTR was updated to use the straight-line distance rather than the previously described system of \textit{Goto} invocation. Even though the latter considers the deviations from the straight line caused by obstacles, it is adversely affected by incomplete planning information. It is promising that decent results are obtained using trivial computations. It is easy to imagine scenarios where the complexity of the currents or terrain should make such a heuristic fail. More work is needed to find richer heuristics that can handle a wide variety of scenarios with relatively low computational footprint. Unlike the previous version of MPTR, the new formulation, using straight line distance heuristic, could be computed online. Even if additional experiments are not as effective, if this approach is able to typically provide good performance then it is a very good fit for online mission planning. 
 
 \begin{table}[H]\small
-    \begin{tabular}{|l|l|l|l|l|}
+    \begin{tabular}{|l|l|l|l|l|l|}
 \hline
-\thead{Route} & \thead{Distance \\ (MPTR)} & \thead{Distance \\ (MPFC)} & \thead{Work (MPTR)} & \thead{Work (MPFC)} \\
+\thead{Route} & \thead{Distance \\ (MPTR)} & \thead{Distance \\ (MPFC)} & \thead{Work (MPTR)} & \thead{Work (MPFC)} & \thead{MPFC's $ith$ choice} \\
 \hline
- (0 1 3 2 4 5 6) & 79127.85 & 80679.24 & 3.589840e+08 & 3.618619e+08  \\
+ (0 1 3 2 4 5 6) & 79127.85 & 80679.24 & 3.589840e+08 & 3.618619e+08 & 80 \\
 \hline 
- (0 1 3 2 5 4 6) & 79318.43 & 78709.46 & 3.593477e+08 & 3.581165e+08  \\
+ (0 1 3 2 5 4 6) & 79318.43 & 78709.46 & 3.593477e+08 & 3.581165e+08 & 1 \\
 \hline
- (0 1 5 4 3 2 6) & 79324.38 & 80420.37 & 3.595655e+08 & 3.616417e+08  \\
+ (0 1 5 4 3 2 6) & 79324.38 & 80420.37 & 3.595655e+08 & 3.616417e+08 & 17 \\
 \hline
- (0 1 4 3 2 5 6) & 79329.37 & 80085.94 & 3.595372e+08 & 3.605901e+08  \\
+ (0 1 4 3 2 5 6) & 79329.37 & 80085.94 & 3.595372e+08 & 3.605901e+08 & 15 \\
 \hline 
- (0 4 1 3 2 5 6) & 79336.72 & 80231.21 & 3.594650e+08 & 3.611406e+08 \\
+ (0 4 1 3 2 5 6) & 79336.72 & 80231.21 & 3.594650e+08 & 3.611406e+08 & 76 \\
 \hline 
     \end{tabular}
     \caption[MPTR: top 5 missions with respect to distance]{Mission Planner Try \& Repair: top 5 missions with respect to distance}
@@ -1797,19 +1733,19 @@ Given this result, MPTR was updated to use the straight-line distance rather tha
 \end{table}
 
 \begin{table}[H]\small
-    \begin{tabular}{|l|l|l|l|l|}
+    \begin{tabular}{|l|l|l|l|l|l|}
 \hline
-\thead{Route} & \thead{Distance \\ (MPTR)} & \thead{Distance \\ (MPFC)} & \thead{Work (MPTR)} & \thead{Work (MPFC)} \\
+\thead{Route} & \thead{Distance \\ (MPTR)} & \thead{Distance \\ (MPFC)} & \thead{Work (MPTR)} & \thead{Work (MPFC)} & \thead{MPFC's $ith$ choice} \\
 \hline
- (0 1 3 2 4 5 6) & 79127.85 & 80679.24 & 3.589840e+08 & 3.618619e+08  \\
+ (0 1 3 2 4 5 6) & 79127.85 & 80679.24 & 3.589840e+08 & 3.618619e+08 & 80 \\
 \hline 
- (0 1 3 2 5 4 6) & 79318.43 & 78709.46 & 3.593477e+08 & 3.581165e+08  \\
+ (0 1 3 2 5 4 6) & 79318.43 & 78709.46 & 3.593477e+08 & 3.581165e+08 & 1 \\
 \hline
- (0 4 1 3 2 5 6) & 79336.72 & 80231.21 & 3.594650e+08 & 3.611406e+08 \\
+ (0 4 1 3 2 5 6) & 79336.72 & 80231.21 & 3.594650e+08 & 3.611406e+08 & 76 \\
 \hline
- (0 1 4 3 2 5 6) & 79329.37 & 80085.94 & 3.595372e+08 & 3.605901e+08  \\
+ (0 1 4 3 2 5 6) & 79329.37 & 80085.94 & 3.595372e+08 & 3.605901e+08 & 15 \\
 \hline 
- (0 1 5 4 3 2 6) & 79324.38 & 80420.37 & 3.595655e+08 & 3.616417e+08  \\
+ (0 1 5 4 3 2 6) & 79324.38 & 80420.37 & 3.595655e+08 & 3.616417e+08 & 17 \\
 \hline 
     \end{tabular}
     \caption[MPTR: top 5 missions with respect to work]{Mission Planner Try \& Repair: top 5 missions with respect to work}
@@ -1817,19 +1753,19 @@ Given this result, MPTR was updated to use the straight-line distance rather tha
 \end{table}
 
 \begin{table}[H]\small
-    \begin{tabular}{|l|l|l|l|}
+    \begin{tabular}{|l|l|l|l|l|}
 \hline
-\thead{Route} & \thead{Distance \\ (straight line)} & \thead{Distance \\ (MPFC)} & \thead{Distance \\ (MPTR)}  \\
+\thead{Route} & \thead{Distance \\ (straight line)} & \thead{Distance \\ (MPFC)} & \thead{Distance \\ (MPTR)} & \thead{MPFC's $ith$ choice} \\
 \hline
- (0 1 3 2 5 4 6) & 78224.58 & 78709.46 & 79318.43 \\
+ (0 1 3 2 5 4 6) & 78224.58 & 78709.46 & 79318.43 & 1 \\
 \hline 
- (0 3 2 5 4 1 6) & 78267.52 & 79156.36 & 79827.51 \\
+ (0 3 2 5 4 1 6) & 78267.52 & 79156.36 & 79827.51 & 4 \\
 \hline
- (0 4 5 2 3 1 6) & 78317.55 & 79893.00 & 79865.82 \\
+ (0 4 5 2 3 1 6) & 78317.55 & 79893.00 & 79865.82 & 24 \\
 \hline
- (0 1 4 5 2 3 6) & 78369.05 & 79280.62 & 79760.27 \\
+ (0 1 4 5 2 3 6) & 78369.05 & 79280.62 & 79760.27 & 5 \\
 \hline 
- (0 1 5 2 3 4 6) & 78548.68 & 79375.23 & 79821.40 \\
+ (0 1 5 2 3 4 6) & 78548.68 & 79375.23 & 79821.40 & 6 \\
 \hline 
     \end{tabular}
     \caption[Straight line: top 5 missions with respect to distance]{Straight line: top 5 missions with respect to distance}
@@ -1838,19 +1774,19 @@ Given this result, MPTR was updated to use the straight-line distance rather tha
 
 \chapter{Conclusions and Future Work}
 
-This thesis demonstrated two agents, Analyst and Surveyor, that each play a role in the autonomous control of a USV. The Analyst assigned reward over the robot's domain and selected high-reward targets for the robot to visit. The evaluation of the domain used both historical and current data to determine \textit{interestingness}. The Surveyor handled mission planning to efficiently visit the targets while also seeking opportunities for accumulating additional reward that does not require much additional resource expenditure. Mission planning was performed by breaking the problem into segments, selecting an order in which to perform these segments, then planning the paths within those segments. 
+This work demonstrated two agents, \textit{\textit{Analyst}} and \textit{Surveyor}, that each play a role in the autonomous control of a USV. The \textit{\textit{Analyst}} assigned reward over the robot's domain and selected high-reward targets for the robot to visit. The evaluation of the domain used both historical and current data to determine \textit{interestingness}. The \textit{Surveyor} handled mission planning to efficiently visit the targets while also seeking opportunities for accumulating additional reward that does not require much additional resource expenditure. Mission planning was performed by breaking the problem into segments, selecting an order in which to perform these segments, then planning the paths within those segments. 
 
 Four metaheuristic algorithms were compared for \textit{Goto} path planning. PSO outperformed all others in all trials in terms of convergence speed, convergence width, and solution fitness. It was also shown that the weights on the important of planning criteria can be modified to emphasize particular planning characteristics. For example, the weights on work and reward can be balanced such that the path includes minor deviations that take advantage of local opportunities for reward with little additional cost. These weights are stable in the sense that the behavior was observed in all paths that use the same weights. 
 
 A simple lawnmower path \textit{Coverage} planner was used to demonstrate the impact of dynamic water currents on path planning. Results were compared where the initial water current data was used throughout and where the forecast was updated whenever the elapsed duration hit a 30-minute interval. Whenever the region was large enough to require updates, the work estimate changed considerably. For the largest two regions, the choice of whether to use row-wise or column-wise movement changed when using updates. 
 
-A mission planner was developed that used a heuristic to select the order of targets to visit before actually planning the segments. This means that the expensive invocation of multiple planners for each possible mission is avoided. The straight-line distance between target centers was used in place of \textit{Goto} planning, and \texit{Coverage} planning was done only once per region with arbitrary region entrance and exit paths. Relaxing the dependencies that dramatically increase mission planning complexity was able to approximate the result of exhaustive search. Mission planning time was reduced from ~24 hours (120 possible missions, evaluated in parallel using 15 threads) to a under 10 minutes in serial. 
+A mission planner was developed that used a heuristic to select the order of targets to visit before actually planning the segments. This means that the expensive invocation of multiple planners for each possible mission is avoided. The straight-line distance between target centers was used in place of \textit{Goto} planning, and \textit{Coverage} planning was done only once per region with arbitrary region entrance and exit paths. Relaxing the dependencies that dramatically increase mission planning complexity was able to approximate the result of exhaustive search. Mission planning time was reduced from ~24 hours (120 possible missions, evaluated in parallel using 15 threads) to a under 10 minutes in serial. 
 
-This thesis lays the groundwork for a larger project toward the development of a sophisticated autonomous marine science platform. The experiments in this text are initial results that suggest some characteristics of the system, but further testing is needed to strengthen the claims made. The system currently stops at the generation of waypoints. The second phase of the project is to apply the system to an actual application. The project was born from an idea to have a robotic boat that explores the seagrass community of the inshore coastal Texas coast. Suitable data sources need to be identified and incorporated. The Analyst needs to study actual relevant imagery instead of the fabricated data it currently uses. In addition, work need to be done to take into account vehicle characteristics for mission planning that is safer and more efficient. Finally, with an operation system in place and collecting real runtime data, additional algorithms can be introduced to increase the decision-making capability of the agents. Each of these stages is described in further detail as follows.
+This work lays the groundwork for a larger project toward the development of a sophisticated autonomous marine science platform. The experiments in this text are initial results that suggest some characteristics of the system, but further testing is needed to strengthen the claims made. The system currently stops at the generation of waypoints. The second phase of the project is to apply the system to an actual application. The project was born from an idea to have a robotic boat that explores the seagrass community of the inshore coastal Texas coast. Suitable data sources need to be identified and incorporated. The \textit{\textit{Analyst}} needs to study actual relevant imagery instead of the fabricated data it currently uses. In addition, work need to be done to take into account vehicle characteristics for mission planning that is safer and more efficient. Finally, with an operation system in place and collecting real runtime data, additional algorithms can be introduced to increase the decision-making capability of the agents. Each of these stages is described in further detail as follows.
 
 \section{Further System Improvement and Evaluation}
 
-It remains to be determined how robust the mission planning is given the highly dynamic and complex marine environment. Mission planning is based on numerous environmental factors. The complexity of terrain and water currents, distribution of reward cells, number of requested target regions, missions constraints, and others characteristics affect planning. Experiments should include environments that exhibit a wide variety of characteristics in order to challenge the Surveyor and evaluate the quality of mission planning. 
+It remains to be determined how robust the mission planning is given the highly dynamic and complex marine environment. Mission planning is based on numerous environmental factors. The complexity of terrain and water currents, distribution of reward cells, number of requested target regions, missions constraints, and others characteristics affect planning. Experiments should include environments that exhibit a wide variety of characteristics in order to challenge the \textit{Surveyor} and evaluate the quality of mission planning. 
 
 While initial results of the straight-line-based MPTR implementation show promising results, more experiments are needed to ensure its reliability. It is expected that certain environment configurations will cause it to be less effective. If so, additional heuristics may be able to capture some characteristics of the terrain and water current complexity without expensive planning. It was shown in Section \ref{} that the dynamic water updates can substantially alter work estimates. Ideally there will be found a method to incorporate the duration estimate without actually generating a \textit{Goto} path. 
 
@@ -1858,17 +1794,17 @@ A glaring omission in the text is results of \textit{Coverage} planning in regio
 
 \section{Real-world Application}
 
-It is hoped to see this system working on a robot and conducting explorations of real scientific value. Initially, it is sufficient that the system plan and execute missions based on the Analyst's automatically generated goals. More sophisticated algorithms can be implemented in an environment where they can actually be evaluated based on the scientific gain to users. The Analyst needs perform data processing to extract meaningful classified units, such as extracting seagrasses from aerial images. This information is analyzed in the context of historical data to assign reward, as has been discussed. The Surveyor may need additional data to inform mission planning. Dynamic wind vectors can affect a boat similar to water currents. Available sunlight could be used to extend the mission duration by incorporating the charging of solar energy units during runtime.  
+It is hoped to see this system working on a robot and conducting explorations of real scientific value. Initially, it is sufficient that the system plan and execute missions based on the \textit{Analyst}'s automatically generated goals. More sophisticated algorithms can be implemented in an environment where they can actually be evaluated based on the scientific gain to users. The \textit{Analyst} needs perform data processing to extract meaningful classified units, such as extracting seagrasses from aerial images. This information is analyzed in the context of historical data to assign reward, as has been discussed. The \textit{\textit{Surveyor}} may need additional data to inform mission planning. Dynamic wind vectors can affect a boat similar to water currents. Available sunlight could be used to extend the mission duration by incorporating the charging of solar energy units during runtime.  
 
 A critical requirement for implementation is to bridge the gap between a kinematic-based planner and dynamic USVs using the solutions. The major output of the mission planner is an ordered set of mission segments. Each segment has a path as a sequence of coordinates and estimates of the path's distance, duration, work, and reward. The coordinates are in latitude and longitude and thus immediately usable by GPS-based navigation systems (available on most USVs). However, the dynamics of real vehicles are such that the paths generated by a kinematic-based planner are unlikely to be optimal compared to one where the dynamics are taken into account. The path attribute estimates are idealized and will disagree with observations. Regardless of dynamics, a longer path that has to overcome stronger water currents will typically be worse than a shorter path on smoother seas. Thus, the planner results should be reasonable effective, especially the Goto paths. The coverage paths require a number of turns and are heavily impacted by the turning radius of the vehicle. Spiral paths are much more effective for a USV than a back-and-forth lawnmower path; it makes the most of the boat's turning radius instead of requiring it to slow down and turn. In this second stage, the goal is to ensure that the mission is feasible for a dynamic robot, rather than optimal. A method must be developed to use experiments to map a relationship between the planner's estimates and the duration, distance, and work observed in the field. This relationship can be used to generate a conservative constraint on the maximum duration and work so that the mission is feasible. This allows the underlying planners to remain generic and applicable to a variety of vehicles but still usable by a particular vehicle. 
 
 \section{Toward Increasing Intelligence}
 
-The system, once fully established as a member of a science team, should be an effective platform for experimenting with the Analyst and Surveyor roles. The Analyst could use data mining to build an understanding of its domain. Differences between expectations and observations can drive fitness functions for evaluating the \textit{interestingness} of a location. Emerging approaches in this field use models of how the brain learns emotions to learn reward functions. The Surveyor should be equipped with multiple path planners with the ability to select an appropriate planner for the environment and vehicle. A sophisticated Surveyor would learn better mission planning over time by studying past mission and tuning algorithm parameters. There is potential to develop highly capable agents that can operate a USV using state-of-the-art planning and learning algorithms as tools.
+The system, once fully established as a member of a science team, should be an effective platform for experimenting with the \textit{Analyst} and \textit{\textit{Surveyor}} roles. The \textit{Analyst} could use data mining to build an understanding of its domain. Differences between expectations and observations can drive fitness functions for evaluating the \textit{interestingness} of a location. Emerging approaches in this field use models of how the brain learns emotions to learn reward functions. The \textit{Surveyor} should be equipped with multiple path planners with the ability to select an appropriate planner for the environment and vehicle. A sophisticated \textit{Surveyor} would learn better mission planning over time by studying past mission and tuning algorithm parameters. There is potential to develop highly capable agents that can operate a USV using state-of-the-art planning and learning algorithms as tools.
 
 
 %\bibliographystyle{theunsrt}
-\bibliographystyle{acm}
+\bibliographystyle{plain}
 %\bibliographystyle{alpha}
 \newpage
 \bibliography{refs}
